@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.dunwu</groupId>
+    <artifactId>sa-token-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>sa-token-demo-quick-login</module>
+        <module>sa-token-demo-jwt</module>
+        <module>sa-token-demo-alone-redis</module>
+        <module>sa-token-demo-springboot</module>
+        <module>sa-token-demo-webflux</module>
+        <module>sa-token-demo-solon</module>
+        <module>sa-token-demo-sso1</module>
+        <module>sa-token-demo-sso1-client</module>
+        <module>sa-token-demo-sso1-server</module>
+        <module>sa-token-demo-sso2-client</module>
+        <module>sa-token-demo-sso2-server</module>
+        <module>sa-token-demo-sso3-client</module>
+        <module>sa-token-demo-sso3-server</module>
+        <module>sa-token-demo-oauth2-client</module>
+        <module>sa-token-demo-oauth2-server</module>
+    </modules>
+
+</project>
