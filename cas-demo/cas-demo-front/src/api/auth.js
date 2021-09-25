@@ -28,9 +28,9 @@ export function getInfo() {
   })
 }
 
-export function getCodeImg() {
+export function getCaptcha() {
   return request({
-    url: 'auth/code',
+    url: 'auth/getCaptcha',
     method: 'get'
   })
 }
@@ -92,4 +92,4 @@ export function resetEmail(data) {
   })
 }
 
-export default { login, logout, getInfo, getCodeImg, editCenter, editPassword, editEmail, resetEmail }
+export default { login, logout, getInfo, getCaptcha, editCenter, editPassword, editEmail, resetEmail }

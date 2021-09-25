@@ -1,7 +1,7 @@
 package io.github.dunwu.module.security.config;
 
+import io.github.dunwu.module.security.entity.dto.CaptchaConfigDto;
 import io.github.dunwu.module.security.entity.dto.JwtDto;
-import io.github.dunwu.module.security.entity.dto.LoginCodeDto;
 import lombok.Data;
 import lombok.ToString;
 
@@ -17,6 +17,10 @@ import java.util.List;
 @ToString
 public class DunwuWebSecurityProperties {
 
+    /** JWT */
+    private final JwtDto jwt = new JwtDto();
+    /** 登陆码 */
+    private final CaptchaConfigDto captcha = new CaptchaConfigDto();
     /** 安全开关 */
     private boolean enabled = false;
     /** 是否允许跨域 */
@@ -45,9 +49,5 @@ public class DunwuWebSecurityProperties {
     private List<String> allRequestWhiteList;
     /** Get 请求白名单 */
     private List<String> getRequestWhiteList;
-    /** JWT */
-    private final JwtDto jwt = new JwtDto();
-    /** 登陆码 */
-    private final LoginCodeDto loginCode = new LoginCodeDto();
 
 }

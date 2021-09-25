@@ -1,12 +1,12 @@
 package io.github.dunwu.module.security.config;
 
-import cn.hutool.core.util.EnumUtil;
 import io.github.dunwu.module.security.annotation.AnonymousAccess;
+import io.github.dunwu.module.security.constant.enums.RequestMethodEnum;
 import io.github.dunwu.module.security.filter.AuthenticationFilter;
 import io.github.dunwu.module.security.handler.JwtAccessDeniedHandler;
 import io.github.dunwu.module.security.handler.JwtAuthenticationEntryPoint;
-import io.github.dunwu.module.security.util.JwtTokenUtil;
 import io.github.dunwu.module.security.service.AuthService;
+import io.github.dunwu.module.security.util.JwtTokenUtil;
 import io.github.dunwu.tool.web.filter.XssFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -41,7 +41,7 @@ import java.util.*;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenUtil tokenUtil;
     private final JwtAuthenticationEntryPoint authenticationErrorHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final ApplicationContext applicationContext;
@@ -73,70 +73,79 @@ public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter 
 
             // 授权异常
             httpSecurity.exceptionHandling()
-                        .authenticationEntryPoint(authenticationErrorHandler)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)
-                        // 防止iframe 造成跨域
-                        .and()
-                        .headers()
-                        .frameOptions()
-                        .disable()
-                        // 不创建会话
-                        .and()
-                        .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                        .and()
-                        .authorizeRequests()
-                        // 静态资源等等
-                        .antMatchers(
-                            HttpMethod.GET,
-                            "/*.html",
-                            "/**/*.html",
-                            "/**/*.css",
-                            "/**/*.js",
-                            "/webSocket/**"
-                        )
-                        .permitAll()
-                        // swagger 文档
-                        .antMatchers("/swagger-ui.html")
-                        .permitAll()
-                        .antMatchers("/swagger-resources/**")
-                        .permitAll()
-                        .antMatchers("/webjars/**")
-                        .permitAll()
-                        .antMatchers("/*/api-docs")
-                        .permitAll()
-                        // 文件
-                        .antMatchers("/avatar/**")
-                        .permitAll()
-                        .antMatchers("/file/**")
-                        .permitAll()
-                        // 阿里巴巴 druid
-                        .antMatchers("/druid/**")
-                        .permitAll()
-                        // 放行OPTIONS请求
-                        .antMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
-                        // 自定义匿名访问所有url放行：允许匿名和带Token访问，细腻化到每个 Request 类型
-                        // GET
-                        .antMatchers(HttpMethod.GET, HttpMethod.GET.name())
-                        .permitAll()
-                        // POST
-                        .antMatchers(HttpMethod.POST, HttpMethod.POST.name())
-                        .permitAll()
-                        // PUT
-                        .antMatchers(HttpMethod.PUT, HttpMethod.PUT.name())
-                        .permitAll()
-                        // PATCH
-                        .antMatchers(HttpMethod.PATCH, HttpMethod.PATCH.name())
-                        .permitAll()
-                        // DELETE
-                        .antMatchers(HttpMethod.DELETE, HttpMethod.DELETE.name())
-                        .permitAll()
-                        // 所有请求都需要认证
-                        .anyRequest()
-                        .authenticated()
-                        .and()
-                        .addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .authenticationEntryPoint(authenticationErrorHandler)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+                // 防止iframe 造成跨域
+                .and()
+                .headers()
+                .frameOptions()
+                .disable()
+                // 不创建会话
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                // 静态资源等等
+                .antMatchers(
+                    HttpMethod.GET,
+                    "/*.html",
+                    "/**/*.html",
+                    "/**/*.css",
+                    "/**/*.js",
+                    "/webSocket/**"
+                )
+                .permitAll()
+                // swagger 文档
+                .antMatchers("/swagger-ui.html")
+                .permitAll()
+                .antMatchers("/swagger-resources/**")
+                .permitAll()
+                .antMatchers("/webjars/**")
+                .permitAll()
+                .antMatchers("/*/api-docs")
+                .permitAll()
+                // 文件
+                .antMatchers("/avatar/**")
+                .permitAll()
+                .antMatchers("/file/**")
+                .permitAll()
+                // 阿里巴巴 druid
+                .antMatchers("/druid/**")
+                .permitAll()
+                // 放行OPTIONS请求
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                .permitAll()
+                // 自定义匿名访问所有url放行：允许匿名和带Token访问，细腻化到每个 Request 类型
+                // GET
+                .antMatchers(HttpMethod.GET,
+                    anonymousUrls.get(RequestMethodEnum.GET.getType()).toArray(new String[0]))
+                .permitAll()
+                // POST
+                .antMatchers(HttpMethod.POST,
+                    anonymousUrls.get(RequestMethodEnum.POST.getType()).toArray(new String[0]))
+                .permitAll()
+                // PUT
+                .antMatchers(HttpMethod.PUT,
+                    anonymousUrls.get(RequestMethodEnum.PUT.getType()).toArray(new String[0]))
+                .permitAll()
+                // PATCH
+                .antMatchers(HttpMethod.PATCH,
+                    anonymousUrls.get(RequestMethodEnum.PATCH.getType()).toArray(new String[0]))
+                .permitAll()
+                // DELETE
+                .antMatchers(HttpMethod.DELETE,
+                    anonymousUrls.get(RequestMethodEnum.DELETE.getType()).toArray(new String[0]))
+                .permitAll()
+                // 所有类型的接口都放行
+                .antMatchers(
+                    anonymousUrls.get(RequestMethodEnum.ALL.getType()).toArray(new String[0]))
+                .permitAll()
+                // 所有请求都需要认证
+                .anyRequest()
+                .authenticated()
+                .and()
+                .addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         } else {
             if (securityProperties.isCorsEnabled()) {
                 // 禁用 CSRF
@@ -147,17 +156,9 @@ public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter 
         }
     }
 
-    /**
-     * 去除 ROLE_ 前缀
-     */
-    @Bean
-    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
-        return new GrantedAuthorityDefaults("");
-    }
-
     @Bean
     public AuthenticationFilter authenticationFilter() {
-        return new AuthenticationFilter(jwtTokenUtil, securityProperties, authService);
+        return new AuthenticationFilter(tokenUtil, securityProperties, authService);
     }
 
     private Map<String, Set<String>> getAnonymousUrl(Map<RequestMappingInfo, HandlerMethod> handlerMethodMap) {
@@ -174,8 +175,9 @@ public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter 
             if (null != anonymousAccess) {
                 List<RequestMethod> requestMethods = new ArrayList<>(
                     infoEntry.getKey().getMethodsCondition().getMethods());
-                HttpMethod httpMethod = EnumUtil.fromString(HttpMethod.class, requestMethods.get(0).name(), null);
-                switch (httpMethod) {
+                RequestMethodEnum request = RequestMethodEnum.find(
+                    requestMethods.size() == 0 ? RequestMethodEnum.ALL.getType() : requestMethods.get(0).name());
+                switch (Objects.requireNonNull(request)) {
                     case GET:
                         get.addAll(infoEntry.getKey().getPatternsCondition().getPatterns());
                         break;
@@ -197,18 +199,14 @@ public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter 
                 }
             }
         }
-        anonymousUrls.put(HttpMethod.GET.name(), get);
-        anonymousUrls.put(HttpMethod.POST.name(), get);
-        anonymousUrls.put(HttpMethod.PUT.name(), get);
-        anonymousUrls.put(HttpMethod.PATCH.name(), get);
-        anonymousUrls.put(HttpMethod.DELETE.name(), get);
-        anonymousUrls.put("ALL", all);
+        anonymousUrls.put(RequestMethodEnum.GET.getType(), get);
+        anonymousUrls.put(RequestMethodEnum.POST.getType(), post);
+        anonymousUrls.put(RequestMethodEnum.PUT.getType(), put);
+        anonymousUrls.put(RequestMethodEnum.PATCH.getType(), patch);
+        anonymousUrls.put(RequestMethodEnum.DELETE.getType(), delete);
+        anonymousUrls.put(RequestMethodEnum.ALL.getType(), all);
         return anonymousUrls;
     }
-
-    // ------------------------------------------------------------------------------------
-    // 注册过滤器、拦截器
-    // ------------------------------------------------------------------------------------
 
     /**
      * 跨域过滤器
@@ -224,6 +222,18 @@ public class DunwuWebSecurityConfiguration extends WebSecurityConfigurerAdapter 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(securityProperties.getCorsPath(), corsConfiguration);
         return new CorsFilter(source);
+    }
+
+    // ------------------------------------------------------------------------------------
+    // 注册过滤器、拦截器
+    // ------------------------------------------------------------------------------------
+
+    /**
+     * 去除 ROLE_ 前缀
+     */
+    @Bean
+    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
+        return new GrantedAuthorityDefaults("");
     }
 
     /**

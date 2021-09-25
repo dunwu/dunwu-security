@@ -3,11 +3,11 @@ package io.github.dunwu.module.security.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import io.github.dunwu.module.security.constant.enums.DataScopeEnum;
 import io.github.dunwu.module.security.service.DataService;
-import io.github.dunwu.module.system.entity.dto.SysDeptDto;
-import io.github.dunwu.module.system.entity.dto.SysRoleDto;
-import io.github.dunwu.module.system.entity.dto.SysUserDto;
-import io.github.dunwu.module.system.service.SysDeptService;
-import io.github.dunwu.module.system.service.SysRoleService;
+import io.github.dunwu.module.system.entity.dto.DeptDto;
+import io.github.dunwu.module.system.entity.dto.RoleDto;
+import io.github.dunwu.module.system.entity.dto.UserDto;
+import io.github.dunwu.module.system.service.DeptService;
+import io.github.dunwu.module.system.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,8 +26,8 @@ import java.util.*;
 @CacheConfig(cacheNames = "data")
 public class DataServiceImpl implements DataService {
 
-    private final SysRoleService roleService;
-    private final SysDeptService deptService;
+    private final RoleService roleService;
+    private final DeptService deptService;
 
     /**
      * 用户角色改变时需清理缓存
@@ -37,13 +37,13 @@ public class DataServiceImpl implements DataService {
      */
     @Override
     @Cacheable(key = "'user:' + #user.id")
-    public List<Long> getDeptIds(SysUserDto user) {
+    public List<Long> getDeptIds(UserDto user) {
         // 用于存储部门id
         Set<Long> deptIds = new HashSet<>();
         // 查询用户角色
-        List<SysRoleDto> roles = roleService.pojoListByUserId(user.getId());
+        List<RoleDto> roles = roleService.pojoListByUserId(user.getId());
         // 获取对应的部门ID
-        for (SysRoleDto role : roles) {
+        for (RoleDto role : roles) {
             DataScopeEnum dataScopeEnum = DataScopeEnum.find(role.getDataScope());
             switch (Objects.requireNonNull(dataScopeEnum)) {
                 case THIS_LEVEL:
@@ -66,9 +66,9 @@ public class DataServiceImpl implements DataService {
      * @param role    角色
      * @return 数据权限ID
      */
-    public Set<Long> getCustomize(Set<Long> deptIds, SysRoleDto role) {
-        List<SysDeptDto> sysDeptDtos = deptService.pojoListByRoleId(role.getId());
-        for (SysDeptDto dept : sysDeptDtos) {
+    public Set<Long> getCustomize(Set<Long> deptIds, RoleDto role) {
+        List<DeptDto> deptDtos = deptService.pojoListByRoleId(role.getId());
+        for (DeptDto dept : deptDtos) {
             deptIds.add(dept.getId());
             Set<Long> childrenDeptIds = deptService.getChildrenDeptIds(dept.getId());
             if (CollectionUtil.isNotEmpty(childrenDeptIds)) {

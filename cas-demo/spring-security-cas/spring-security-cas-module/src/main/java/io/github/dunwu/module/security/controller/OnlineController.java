@@ -1,8 +1,8 @@
 package io.github.dunwu.module.security.controller;
 
-import io.github.dunwu.module.security.util.EncryptUtils;
 import io.github.dunwu.module.security.service.AuthService;
-import io.github.dunwu.tool.data.core.Result;
+import io.github.dunwu.module.security.util.EncryptUtil;
+import io.github.dunwu.tool.data.DataResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -26,20 +26,20 @@ public class OnlineController {
     @ApiOperation("查询在线用户")
     @PreAuthorize("@exp.check()")
     @GetMapping("page")
-    public Result query(String filter, Pageable pageable) {
-        return Result.ok(authService.getAll(filter, pageable));
+    public DataResult query(String filter, Pageable pageable) {
+        return DataResult.ok(authService.getAllOnlineUsers(filter, pageable));
     }
 
     @ApiOperation("踢出用户")
     @PreAuthorize("@exp.check()")
     @PostMapping("del/batch")
-    public Result delete(@RequestBody Set<String> keys) throws Exception {
+    public DataResult delete(@RequestBody Set<String> keys) throws Exception {
         for (String key : keys) {
             // 解密Key
-            key = EncryptUtils.desDecrypt(key);
-            authService.kickOut(key);
+            key = EncryptUtil.desDecrypt(key);
+            authService.offline(key);
         }
-        return Result.ok();
+        return DataResult.ok();
     }
 
 }

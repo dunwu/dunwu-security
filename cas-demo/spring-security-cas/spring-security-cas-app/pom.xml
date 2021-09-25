@@ -13,7 +13,7 @@
   <parent>
     <groupId>io.github.dunwu.boot</groupId>
     <artifactId>dunwu-boot</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6-SNAPSHOT</version>
   </parent>
 
   <groupId>io.github.dunwu</groupId>
@@ -24,8 +24,8 @@
   <properties>
     <druid.version>1.1.24</druid.version>
     <log4jdbc.version>1.16</log4jdbc.version>
-    <dunwu-tool.version>1.0.4</dunwu-tool.version>
-    <dunwu-boot.version>1.0.4</dunwu-boot.version>
+    <dunwu-tool.version>1.0.6-SNAPSHOT</dunwu-tool.version>
+    <dunwu-boot.version>1.0.6-SNAPSHOT</dunwu-boot.version>
   </properties>
 
   <dependencies>
@@ -37,14 +37,11 @@
     <dependency>
       <groupId>io.github.dunwu.boot</groupId>
       <artifactId>dunwu-starter-mybatis</artifactId>
-      <version>1.0.5</version>
     </dependency>
     <dependency>
       <groupId>io.github.dunwu.boot</groupId>
       <artifactId>dunwu-starter-web</artifactId>
-      <version>1.0.5</version>
     </dependency>
-
 
     <!--Spring boot Web容器-->
     <dependency>
@@ -98,7 +95,7 @@
       <dependency>
         <groupId>io.github.dunwu</groupId>
         <artifactId>dunwu-dependencies</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.6-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

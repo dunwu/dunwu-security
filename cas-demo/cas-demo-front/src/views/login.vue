@@ -8,9 +8,7 @@
       label-width="0px"
       class="login-form"
     >
-      <h3 class="title">
-        DUNWU 权限管理系统
-      </h3>
+      <h3 class="title">DUNWU 权限管理系统</h3>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
@@ -41,15 +39,13 @@
           <img :src="codeUrl" @click="getCode">
         </div>
       </el-form-item>
-      <el-checkbox v-model="loginForm.rememberMe" style="margin:0 0 25px 0;">
-        记住我
-      </el-checkbox>
-      <el-form-item style="width:100%;">
+      <el-checkbox v-model="loginForm.rememberMe" style="margin: 0 0 25px 0">记住我</el-checkbox>
+      <el-form-item style="width: 100%">
         <el-button
           :loading="loading"
           size="medium"
           type="primary"
-          style="width:100%;"
+          style="width: 100%"
           @click.native.prevent="handleLogin"
         >
           <span v-if="!loading">登 录</span>
@@ -111,7 +107,7 @@ export default {
   },
   methods: {
     getCode() {
-      authApi.getCodeImg().then(res => {
+      authApi.getCaptcha().then(res => {
         this.codeUrl = res.img
         this.loginForm.uuid = res.uuid
       })

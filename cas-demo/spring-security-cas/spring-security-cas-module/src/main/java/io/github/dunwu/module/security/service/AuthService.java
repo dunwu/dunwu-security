@@ -1,36 +1,45 @@
 package io.github.dunwu.module.security.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
-import com.wf.captcha.*;
 import com.wf.captcha.base.Captcha;
 import io.github.dunwu.module.security.config.DunwuWebSecurityProperties;
+import io.github.dunwu.module.security.constant.enums.CaptchaTypeEnum;
 import io.github.dunwu.module.security.constant.enums.CodeEnum;
-import io.github.dunwu.module.security.entity.dto.JwtUserDto;
-import io.github.dunwu.module.security.entity.dto.LoginCodeDto;
+import io.github.dunwu.module.security.entity.dto.CaptchaImageDto;
+import io.github.dunwu.module.security.entity.dto.LoginDto;
 import io.github.dunwu.module.security.entity.dto.OnlineUserDto;
-import io.github.dunwu.module.security.util.EncryptUtils;
+import io.github.dunwu.module.security.entity.vo.LoginSuccessVo;
+import io.github.dunwu.module.security.entity.vo.UserVo;
+import io.github.dunwu.module.security.exception.AuthException;
+import io.github.dunwu.module.security.util.CaptchaUtil;
+import io.github.dunwu.module.security.util.EncryptUtil;
+import io.github.dunwu.module.security.util.JwtTokenUtil;
 import io.github.dunwu.module.security.util.SecurityUtil;
-import io.github.dunwu.module.system.entity.SysUser;
-import io.github.dunwu.module.system.entity.dto.SysUserDto;
-import io.github.dunwu.module.system.entity.query.SysUserQuery;
+import io.github.dunwu.module.system.entity.User;
+import io.github.dunwu.module.system.entity.dto.UserDto;
+import io.github.dunwu.module.system.entity.query.UserQuery;
 import io.github.dunwu.module.system.entity.vo.UserPassVo;
-import io.github.dunwu.module.system.service.SysDeptService;
-import io.github.dunwu.module.system.service.SysRoleService;
-import io.github.dunwu.module.system.service.SysUserService;
-import io.github.dunwu.tool.data.core.DataException;
-import io.github.dunwu.tool.data.core.Result;
+import io.github.dunwu.module.system.service.DeptService;
+import io.github.dunwu.module.system.service.RoleService;
+import io.github.dunwu.module.system.service.UserService;
+import io.github.dunwu.tool.data.exception.DataException;
 import io.github.dunwu.tool.data.redis.RedisHelper;
 import io.github.dunwu.tool.data.util.PageUtil;
-import io.github.dunwu.tool.exception.BadConfigurationException;
 import io.github.dunwu.tool.web.ServletUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,10 +47,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -53,27 +61,28 @@ import javax.servlet.http.HttpServletRequest;
 @Service("userDetailsService")
 public class AuthService implements UserDetailsService {
 
-    static final Map<String, JwtUserDto> userDtoCache = new ConcurrentHashMap<>();
+    static final Map<String, UserVo> userDtoCache = new ConcurrentHashMap<>();
 
     private final RSA rsa;
     private final RedisHelper redisHelper;
-    private final SysUserService userService;
-    private final SysDeptService deptService;
-    private final SysRoleService roleService;
+    private final UserService userService;
+    private final DeptService deptService;
+    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
-    private final VerifyService verifyService;
+    private final JwtTokenUtil jwtTokenUtil;
     private final DunwuWebSecurityProperties securityProperties;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Override
-    public JwtUserDto loadUserByUsername(String username) {
+    public UserVo loadUserByUsername(String username) {
         boolean searchDb = true;
-        JwtUserDto jwtUserDto = null;
+        UserVo userVo = null;
         if (securityProperties.isCacheEnable() && userDtoCache.containsKey(username)) {
-            jwtUserDto = userDtoCache.get(username);
+            userVo = userDtoCache.get(username);
             searchDb = false;
         }
         if (searchDb) {
-            SysUserDto user;
+            UserDto user;
             user = userService.pojoByUsername(username);
             if (user == null) {
                 throw new UsernameNotFoundException("");
@@ -83,35 +92,125 @@ public class AuthService implements UserDetailsService {
                 }
 
                 Set<Long> deptIds = deptService.getChildrenDeptIds(user.getDeptId());
-                jwtUserDto = new JwtUserDto(user, deptIds, roleService.mapToGrantedAuthorities(user));
-                userDtoCache.put(username, jwtUserDto);
+                userVo = new UserVo(user, deptIds, roleService.mapToGrantedAuthorities(user));
+                userDtoCache.put(username, userVo);
             }
         }
-        return jwtUserDto;
+        return userVo;
+    }
+
+    /**
+     * 处理登出请求
+     */
+    public boolean logout(String token) {
+        String key = securityProperties.getJwt().getOnlineKey() + token;
+        redisHelper.del(key);
+        return true;
+    }
+
+    /**
+     * 处理登录请求
+     */
+    public LoginSuccessVo login(LoginDto loginDto, HttpServletRequest request) {
+        checkCaptcha(loginDto);
+
+        // 密码解密
+        String password = rsa.decryptStr(loginDto.getPassword(), KeyType.PrivateKey);
+        UsernamePasswordAuthenticationToken authenticationToken =
+            new UsernamePasswordAuthenticationToken(loginDto.getUsername(), password);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 生成令牌
+        String token = jwtTokenUtil.createToken(authentication);
+        final UserVo userVo = (UserVo) authentication.getPrincipal();
+        // 保存在线信息
+        saveLoginUserInfo(userVo, token, request);
+
+        if (securityProperties.isSingleLogin()) {
+            //踢掉之前已经登录的token
+            checkLoginOnUser(loginDto.getUsername(), token);
+        }
+
+        // 返回 token 与 用户信息
+        return new LoginSuccessVo(securityProperties.getJwt().getTokenStartWith() + token, userVo);
+    }
+
+    /**
+     * 校验验证码
+     */
+    public void checkCaptcha(LoginDto loginDto) {
+        // 查询验证码
+        String code = (String) redisHelper.get(loginDto.getUuid());
+        // 清除验证码
+        redisHelper.del(loginDto.getUuid());
+        if (StrUtil.isBlank(code)) {
+            throw new AuthException("验证码不存在或已过期");
+        }
+        if (StrUtil.isBlank(loginDto.getCode()) || !loginDto.getCode().equalsIgnoreCase(code)) {
+            throw new AuthException("验证码错误");
+        }
     }
 
     /**
      * 保存在线用户信息
-     *
-     * @param jwtUserDto /
-     * @param token      /
-     * @param request    /
      */
-    public void save(JwtUserDto jwtUserDto, String token, HttpServletRequest request) {
-        String dept = jwtUserDto.getUser().getDept().getName();
+    public void saveLoginUserInfo(UserVo userVo, String token, HttpServletRequest request) {
+        String dept = userVo.getUser().getDept().getName();
         ServletUtil.RequestIdentityInfo requestIdentityInfo = ServletUtil.getRequestIdentityInfo(request);
         String ip = requestIdentityInfo.getIp();
         String browser = requestIdentityInfo.getBrowser();
         String address = requestIdentityInfo.getLocation();
         OnlineUserDto onlineUserDto = null;
         try {
-            onlineUserDto = new OnlineUserDto(jwtUserDto.getUsername(), jwtUserDto.getUser().getNickname(), dept,
-                browser, ip, address, EncryptUtils.desEncrypt(token), new Date());
+            onlineUserDto = new OnlineUserDto(userVo.getUsername(), userVo.getUser().getNickname(), dept,
+                browser, ip, address, EncryptUtil.desEncrypt(token), new Date());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         redisHelper.set(securityProperties.getJwt().getOnlineKey() + token, onlineUserDto,
             securityProperties.getJwt().getTokenValidityInSeconds() / 1000);
+    }
+
+    /**
+     * 强制用户下线
+     */
+    public void offline(String key) {
+        key = securityProperties.getJwt().getOnlineKey() + key;
+        redisHelper.del(key);
+    }
+
+    /**
+     * 根据用户名强退用户
+     *
+     * @param username /
+     */
+    @Async
+    public void offlineForUsername(String username) throws Exception {
+        List<OnlineUserDto> onlineUsers = getAllOnlineUsers(username);
+        for (OnlineUserDto onlineUser : onlineUsers) {
+            if (onlineUser.getUserName().equals(username)) {
+                String token = EncryptUtil.desDecrypt(onlineUser.getKey());
+                offline(token);
+            }
+        }
+    }
+
+    /**
+     * 获取验证码图片信息
+     */
+    public CaptchaImageDto getCaptcha() {
+        // 获取运算的结果
+        Captcha captcha = CaptchaUtil.getCaptcha(securityProperties.getCaptcha());
+        String uuid = securityProperties.getJwt().getCodeKey() + IdUtil.simpleUUID();
+        // 当验证码类型为 arithmetic 时且长度 >= 2 时，captcha.text() 的结果有几率为浮点型
+        String captchaValue = captcha.text();
+        if (captcha.getCharType() == CaptchaTypeEnum.ARITHMETIC.getCode() && captchaValue.contains(".")) {
+            captchaValue = captchaValue.split("\\.")[0];
+        }
+        // 刷新验证码缓存
+        redisHelper.set(uuid, captchaValue, securityProperties.getCaptcha().getExpiration(), TimeUnit.MINUTES);
+        // 返回验证码信息
+        return new CaptchaImageDto(captcha.toBase64(), uuid);
     }
 
     /**
@@ -121,46 +220,12 @@ public class AuthService implements UserDetailsService {
      * @param pageable /
      * @return /
      */
-    public Map<String, Object> getAll(String filter, Pageable pageable) {
-        List<OnlineUserDto> onlineUserDtos = getAll(filter);
+    public Map<String, Object> getAllOnlineUsers(String filter, Pageable pageable) {
+        List<OnlineUserDto> onlineUserDtos = getAllOnlineUsers(filter);
         return PageUtil.toMap(
             PageUtil.toList(pageable.getPageNumber(), pageable.getPageSize(), onlineUserDtos),
             onlineUserDtos.size()
         );
-    }
-
-    /**
-     * 查询全部数据，不分页
-     *
-     * @param filter /
-     * @return /
-     */
-    public List<OnlineUserDto> getAll(String filter) {
-        List<String> keys = redisHelper.scan(securityProperties.getJwt().getOnlineKey() + "*");
-        Collections.reverse(keys);
-        List<OnlineUserDto> onlineUserDtos = new ArrayList<>();
-        for (String key : keys) {
-            OnlineUserDto onlineUserDto = (OnlineUserDto) redisHelper.get(key);
-            if (StrUtil.isNotBlank(filter)) {
-                if (onlineUserDto.toString().contains(filter)) {
-                    onlineUserDtos.add(onlineUserDto);
-                }
-            } else {
-                onlineUserDtos.add(onlineUserDto);
-            }
-        }
-        onlineUserDtos.sort((o1, o2) -> o2.getLoginTime().compareTo(o1.getLoginTime()));
-        return onlineUserDtos;
-    }
-
-    /**
-     * 退出登录
-     *
-     * @param token /
-     */
-    public void logout(String token) {
-        String key = securityProperties.getJwt().getOnlineKey() + token;
-        redisHelper.del(key);
     }
 
     /**
@@ -173,123 +238,20 @@ public class AuthService implements UserDetailsService {
         return (OnlineUserDto) redisHelper.get(key);
     }
 
-    /**
-     * 检测用户是否在之前已经登录，已经登录踢下线
-     *
-     * @param userName 用户名
-     */
-    public void checkLoginOnUser(String userName, String igoreToken) {
-        List<OnlineUserDto> onlineUserDtos = getAll(userName);
-        if (onlineUserDtos == null || onlineUserDtos.isEmpty()) {
-            return;
-        }
-        for (OnlineUserDto onlineUserDto : onlineUserDtos) {
-            if (onlineUserDto.getUserName().equals(userName)) {
-                try {
-                    String token = EncryptUtils.desDecrypt(onlineUserDto.getKey());
-                    if (StrUtil.isNotBlank(igoreToken) && !igoreToken.equals(token)) {
-                        this.kickOut(token);
-                    } else if (StrUtil.isBlank(igoreToken)) {
-                        this.kickOut(token);
-                    }
-                } catch (Exception e) {
-                    log.error("checkUser is error", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * 踢出用户
-     *
-     * @param key /
-     */
-    public void kickOut(String key) {
-        key = securityProperties.getJwt().getOnlineKey() + key;
-        redisHelper.del(key);
-    }
-
-    /**
-     * 根据用户名强退用户
-     *
-     * @param username /
-     */
-    @Async
-    public void kickOutForUsername(String username) throws Exception {
-        List<OnlineUserDto> onlineUsers = getAll(username);
-        for (OnlineUserDto onlineUser : onlineUsers) {
-            if (onlineUser.getUserName().equals(username)) {
-                String token = EncryptUtils.desDecrypt(onlineUser.getKey());
-                kickOut(token);
-            }
-        }
-    }
-
-    /**
-     * 获取校验码运算结果
-     *
-     * @return /
-     */
-    public Captcha getCaptcha() {
-        return switchCaptcha(securityProperties.getLoginCode());
-    }
-
-    /**
-     * 依据配置信息生产验证码
-     *
-     * @param loginCode 验证码配置信息
-     * @return /
-     */
-    private Captcha switchCaptcha(LoginCodeDto loginCode) {
-        Captcha captcha;
-        synchronized (this) {
-            switch (loginCode.getCodeType()) {
-                case arithmetic:
-                    // 算术类型 https://gitee.com/whvse/EasyCaptcha
-                    captcha = new ArithmeticCaptcha(loginCode.getWidth(), loginCode.getHeight());
-                    // 几位数运算，默认是两位
-                    captcha.setLen(loginCode.getLength());
-                    break;
-                case chinese:
-                    captcha = new ChineseCaptcha(loginCode.getWidth(), loginCode.getHeight());
-                    captcha.setLen(loginCode.getLength());
-                    break;
-                case chinese_gif:
-                    captcha = new ChineseGifCaptcha(loginCode.getWidth(), loginCode.getHeight());
-                    captcha.setLen(loginCode.getLength());
-                    break;
-                case gif:
-                    captcha = new GifCaptcha(loginCode.getWidth(), loginCode.getHeight());
-                    captcha.setLen(loginCode.getLength());
-                    break;
-                case spec:
-                    captcha = new SpecCaptcha(loginCode.getWidth(), loginCode.getHeight());
-                    captcha.setLen(loginCode.getLength());
-                    break;
-                default:
-                    throw new BadConfigurationException("验证码配置信息错误！正确配置查看 LoginCodeEnum ");
-            }
-        }
-        if (StrUtil.isNotBlank(loginCode.getFontName())) {
-            captcha.setFont(new Font(loginCode.getFontName(), Font.PLAIN, loginCode.getFontSize()));
-        }
-        return captcha;
-    }
-
     public void setEnableCache(boolean enableCache) {
         securityProperties.setCacheEnable(enableCache);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updateCenter(SysUser entity) {
-        SysUserDto user = userService.pojoById(entity.getId());
-        SysUserQuery query = new SysUserQuery();
+    public void updateCenter(User entity) {
+        UserDto user = userService.pojoById(entity.getId());
+        UserQuery query = new UserQuery();
         query.setPhone(entity.getPhone());
-        SysUserDto user1 = userService.pojoByQuery(query);
+        UserDto user1 = userService.pojoByQuery(query);
         if (user1 != null && !user.getId().equals(user1.getId())) {
             throw new DataException(StrUtil.format("未找到 phone = {} 的用户", entity.getPhone()));
         }
-        SysUser sysUser = BeanUtil.toBean(user, SysUser.class);
+        User sysUser = BeanUtil.toBean(user, User.class);
         sysUser.setNickname(entity.getNickname());
         sysUser.setPhone(entity.getPhone());
         sysUser.setGender(entity.getGender());
@@ -309,15 +271,6 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * 清理 登陆时 用户缓存信息
-     *
-     * @param username /
-     */
-    private void flushCache(String username) {
-        cleanUserCache(username);
-    }
-
-    /**
      * 清理特定用户缓存信息<br> 用户信息变更时
      *
      * @param userName /
@@ -332,32 +285,42 @@ public class AuthService implements UserDetailsService {
     public void updatePass(UserPassVo passVo) {
         String oldPass = rsa.decryptStr(passVo.getOldPass(), KeyType.PrivateKey);
         String newPass = rsa.decryptStr(passVo.getNewPass(), KeyType.PrivateKey);
-        SysUserDto sysUserDto = userService.pojoByUsername(SecurityUtil.getCurrentUsername());
-        if (!passwordEncoder.matches(oldPass, sysUserDto.getPassword())) {
+        UserDto userDto = userService.pojoByUsername(SecurityUtil.getCurrentUsername());
+        if (!passwordEncoder.matches(oldPass, userDto.getPassword())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "修改失败，旧密码错误");
         }
-        if (passwordEncoder.matches(newPass, sysUserDto.getPassword())) {
+        if (passwordEncoder.matches(newPass, userDto.getPassword())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "新密码不能与旧密码相同");
         }
-        SysUser user = new SysUser();
-        user.setId(sysUserDto.getId());
+        User user = new User();
+        user.setId(userDto.getId());
         user.setPassword(passwordEncoder.encode(newPass));
         userService.updateById(user);
-        flushCache(sysUserDto.getUsername());
+        flushCache(userDto.getUsername());
     }
 
-    public Result updateEmail(String code, SysUser entity) {
+    public boolean updateEmail(String code, User entity) {
         String password = rsa.decryptStr(entity.getPassword(), KeyType.PrivateKey);
-        SysUserDto userDto = userService.pojoByUsername(SecurityUtil.getCurrentUsername());
+        UserDto userDto = userService.pojoByUsername(SecurityUtil.getCurrentUsername());
         if (!passwordEncoder.matches(password, userDto.getPassword())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "密码错误");
         }
-        verifyService.validated(CodeEnum.EMAIL_RESET_EMAIL_CODE.getKey() + entity.getEmail(), code);
-        SysUser user = new SysUser();
+        validated(CodeEnum.EMAIL_RESET_EMAIL_CODE.getKey() + entity.getEmail(), code);
+        User user = new User();
         user.setId(entity.getId());
         user.setPassword(passwordEncoder.encode(entity.getPassword()));
         userService.updateById(user);
-        return Result.ok();
+        return true;
+    }
+
+    public boolean validated(String key, String code) {
+        Object value = redisHelper.get(key);
+        if (value == null || !value.toString().equals(code)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "无效验证码");
+        } else {
+            redisHelper.del(key);
+        }
+        return true;
     }
 
     /**
@@ -365,6 +328,60 @@ public class AuthService implements UserDetailsService {
      */
     public void cleanAll() {
         userDtoCache.clear();
+    }
+
+    /**
+     * 查询全部在线用户数据，不分页
+     */
+    private List<OnlineUserDto> getAllOnlineUsers(String filter) {
+        List<String> keys = redisHelper.scan(securityProperties.getJwt().getOnlineKey() + "*");
+        Collections.reverse(keys);
+        List<OnlineUserDto> onlineUserDtos = new ArrayList<>();
+        for (String key : keys) {
+            OnlineUserDto onlineUserDto = (OnlineUserDto) redisHelper.get(key);
+            if (StrUtil.isNotBlank(filter)) {
+                if (onlineUserDto.toString().contains(filter)) {
+                    onlineUserDtos.add(onlineUserDto);
+                }
+            } else {
+                onlineUserDtos.add(onlineUserDto);
+            }
+        }
+        onlineUserDtos.sort((o1, o2) -> o2.getLoginTime().compareTo(o1.getLoginTime()));
+        return onlineUserDtos;
+    }
+
+    /**
+     * 检测用户是否在之前已经登录，已经登录踢下线
+     */
+    private void checkLoginOnUser(String userName, String ignoreToken) {
+        List<OnlineUserDto> onlineUsers = getAllOnlineUsers(userName);
+        if (CollectionUtil.isEmpty(onlineUsers)) {
+            return;
+        }
+        for (OnlineUserDto onlineUserDto : onlineUsers) {
+            if (onlineUserDto.getUserName().equals(userName)) {
+                try {
+                    String token = EncryptUtil.desDecrypt(onlineUserDto.getKey());
+                    if (StrUtil.isNotBlank(ignoreToken) && !ignoreToken.equals(token)) {
+                        this.offline(token);
+                    } else if (StrUtil.isBlank(ignoreToken)) {
+                        this.offline(token);
+                    }
+                } catch (Exception e) {
+                    log.error("checkUser is error", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 清理 登陆时 用户缓存信息
+     *
+     * @param username /
+     */
+    private void flushCache(String username) {
+        cleanUserCache(username);
     }
 
 }
