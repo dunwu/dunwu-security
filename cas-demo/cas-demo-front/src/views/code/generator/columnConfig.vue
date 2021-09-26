@@ -355,7 +355,7 @@ export default {
         })
         .catch(err => {
           this.loading = false
-          console.error('保存失败', err.response.data.message)
+          console.error('保存失败', err.response.data.msg)
         })
     },
     saveColumnConfig() {
@@ -375,7 +375,7 @@ export default {
         })
         .catch(err => {
           this.configLoading = false
-          console.error(err.response.data.message)
+          console.error(err.response.data.msg)
         })
     },
     syncTable() {

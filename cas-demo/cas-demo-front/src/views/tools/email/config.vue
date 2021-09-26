@@ -32,24 +32,17 @@ export default {
   name: 'Config',
   data() {
     return {
-      loading: false, form: { id: 1, fromUser: '', user: '', pass: '', host: '', port: '', sslEnable: '' },
+      loading: false,
+      form: { id: 1, fromUser: '', user: '', pass: '', host: '', port: '', sslEnable: '' },
       rules: {
         fromUser: [
           { required: true, message: '请输入发件人邮箱', trigger: 'blur' },
           { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
         ],
-        user: [
-          { required: true, message: '请输入发件用户名', trigger: 'blur' }
-        ],
-        pass: [
-          { required: true, message: '密码不能为空', trigger: 'blur' }
-        ],
-        host: [
-          { required: true, message: 'SMTP地址不能为空', trigger: 'blur' }
-        ],
-        port: [
-          { required: true, message: 'SMTP端口不能为空', trigger: 'blur' }
-        ]
+        user: [{ required: true, message: '请输入发件用户名', trigger: 'blur' }],
+        pass: [{ required: true, message: '密码不能为空', trigger: 'blur' }],
+        host: [{ required: true, message: 'SMTP地址不能为空', trigger: 'blur' }],
+        port: [{ required: true, message: 'SMTP端口不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -63,20 +56,22 @@ export default {
       })
     },
     doSubmit() {
-      this.$refs['form'].validate((valid) => {
+      this.$refs['form'].validate(valid => {
         if (valid) {
           this.loading = true
-          update(this.form).then(res => {
-            this.$notify({
-              title: '修改成功',
-              type: 'success',
-              duration: 2500
+          update(this.form)
+            .then(res => {
+              this.$notify({
+                title: '修改成功',
+                type: 'success',
+                duration: 2500
+              })
+              this.loading = false
             })
-            this.loading = false
-          }).catch(err => {
-            this.loading = false
-            console.log(err.response.data.message)
-          })
+            .catch(err => {
+              this.loading = false
+              console.log(err.response.data.msg)
+            })
         } else {
           return false
         }
@@ -86,6 +81,4 @@ export default {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

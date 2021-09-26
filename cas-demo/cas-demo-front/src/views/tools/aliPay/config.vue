@@ -39,24 +39,12 @@ export default {
       loading: false,
       form: { appId: '', sysServiceProviderId: '', privateKey: '', publicKey: '', returnUrl: '', notifyUrl: '' },
       rules: {
-        appId: [
-          { required: true, message: '请输入appID', trigger: 'blur' }
-        ],
-        sysServiceProviderId: [
-          { required: true, message: '请输入商家账号', trigger: 'blur' }
-        ],
-        privateKey: [
-          { required: true, message: '商户私钥不能为空', trigger: 'blur' }
-        ],
-        publicKey: [
-          { required: true, message: '支付宝公钥不能为空', trigger: 'blur' }
-        ],
-        returnUrl: [
-          { required: true, message: '回调地址不能为空', trigger: 'blur' }
-        ],
-        notifyUrl: [
-          { required: true, message: '回调地址不能为空', trigger: 'blur' }
-        ]
+        appId: [{ required: true, message: '请输入appID', trigger: 'blur' }],
+        sysServiceProviderId: [{ required: true, message: '请输入商家账号', trigger: 'blur' }],
+        privateKey: [{ required: true, message: '商户私钥不能为空', trigger: 'blur' }],
+        publicKey: [{ required: true, message: '支付宝公钥不能为空', trigger: 'blur' }],
+        returnUrl: [{ required: true, message: '回调地址不能为空', trigger: 'blur' }],
+        notifyUrl: [{ required: true, message: '回调地址不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -70,20 +58,22 @@ export default {
       })
     },
     doSubmit() {
-      this.$refs['form'].validate((valid) => {
+      this.$refs['form'].validate(valid => {
         if (valid) {
           this.loading = true
-          update(this.form).then(res => {
-            this.$notify({
-              title: '修改成功',
-              type: 'success',
-              duration: 2500
+          update(this.form)
+            .then(res => {
+              this.$notify({
+                title: '修改成功',
+                type: 'success',
+                duration: 2500
+              })
+              this.loading = false
             })
-            this.loading = false
-          }).catch(err => {
-            this.loading = false
-            console.log(err.response.data.message)
-          })
+            .catch(err => {
+              this.loading = false
+              console.log(err.response.data.msg)
+            })
         } else {
           return false
         }
@@ -93,6 +83,4 @@ export default {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

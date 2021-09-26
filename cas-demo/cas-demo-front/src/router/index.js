@@ -11,7 +11,7 @@ import store from '@/store'
 import Config from '@/settings'
 import constantRouter from './constantRouter'
 import { getToken } from '@/utils/auth' // getToken from cookie
-import { buildMenus } from '@/api/system/menu'
+import { buildMenus } from '@/api/user/menu'
 import { filterAsyncRouter } from '@/store/modules/permission'
 
 Vue.use(Router)

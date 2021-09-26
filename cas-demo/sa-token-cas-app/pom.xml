@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.dunwu.boot</groupId>
+    <artifactId>dunwu-boot</artifactId>
+    <version>1.0.6-SNAPSHOT</version>
+  </parent>
+
+  <groupId>io.github.dunwu</groupId>
+  <artifactId>sa-token-cas-app</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <druid.version>1.1.24</druid.version>
+    <log4jdbc.version>1.16</log4jdbc.version>
+    <sa-token-version>1.26.0</sa-token-version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.dunwu</groupId>
+      <artifactId>sa-token-cas-module</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.dunwu.boot</groupId>
+      <artifactId>dunwu-starter-mybatis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.dunwu.boot</groupId>
+      <artifactId>dunwu-starter-web</artifactId>
+    </dependency>
+
+    <!-- spring boot 缓存 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <!--Spring boot Redis-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <!-- Sa-Token 权限认证, 在线文档：http://sa-token.dev33.cn/ -->
+    <dependency>
+      <groupId>cn.dev33</groupId>
+      <artifactId>sa-token-spring-boot-starter</artifactId>
+      <version>${sa-token-version}</version>
+    </dependency>
+    <!-- Sa-Token整合redis (使用jackson序列化方式) -->
+    <dependency>
+      <groupId>cn.dev33</groupId>
+      <artifactId>sa-token-dao-redis-jackson</artifactId>
+      <version>${sa-token-version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid-spring-boot-starter</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+
+    <!--Mysql依赖包-->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+
+    <!--监控sql日志-->
+    <dependency>
+      <groupId>org.bgee.log4jdbc-log4j2</groupId>
+      <artifactId>log4jdbc-log4j2-jdbc4.1</artifactId>
+      <version>${log4jdbc.version}</version>
+    </dependency>
+  </dependencies>
+</project>

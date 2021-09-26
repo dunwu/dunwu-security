@@ -21,7 +21,9 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>
-      <el-button v-permission="['admin','deploy:add']" :loading="submitLoading" type="primary" @click="doSubmit">确认</el-button>
+      <el-button v-permission="['admin', 'deploy:add']" :loading="submitLoading" type="primary" @click="doSubmit">
+        确认
+      </el-button>
     </div>
     <!--分页组件-->
     <el-Pagination
@@ -96,7 +98,7 @@ export default {
           })
           .catch(err => {
             this.submitLoading = false
-            console.log('error:' + err.response.data.message)
+            console.log('error:' + err.response.data.msg)
           })
       }
     }
@@ -104,5 +106,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

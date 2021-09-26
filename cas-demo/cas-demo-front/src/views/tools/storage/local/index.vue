@@ -4,7 +4,15 @@
     <div class="head-container">
       <div v-if="crud.props.searchToggle">
         <!-- 搜索 -->
-        <el-input v-model="query.blurry" clearable size="small" placeholder="输入内容模糊搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        <el-input
+          v-model="query.blurry"
+          clearable
+          size="small"
+          placeholder="输入内容模糊搜索"
+          style="width: 200px;"
+          class="filter-item"
+          @keyup.enter.native="crud.toQuery"
+        />
         <date-range-picker v-model="query.createTime" class="date-item" />
         <TableQueryOperation />
       </div>
@@ -12,18 +20,26 @@
         <!-- 添加 -->
         <el-button
           slot="left"
-          v-permission="['admin','storage:add']"
+          v-permission="['admin', 'storage:add']"
           class="filter-item"
           size="mini"
           type="primary"
           icon="el-icon-upload"
           @click="crud.toAdd"
-        >上传
+        >
+          上传
         </el-button>
       </TableOperation>
     </div>
     <!--表单组件-->
-    <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.add ? '文件上传' : '编辑文件'" width="500px">
+    <el-dialog
+      append-to-body
+      :close-on-click-modal="false"
+      :before-close="crud.cancelCU"
+      :visible.sync="crud.status.cu > 0"
+      :title="crud.status.add ? '文件上传' : '编辑文件'"
+      width="500px"
+    >
       <el-form ref="form" :model="form" size="small" label-width="80px">
         <el-form-item label="文件名">
           <el-input v-model="form.name" style="width: 370px;" />
@@ -40,7 +56,10 @@
             :on-error="handleError"
             :action="fileUploadApi + '?name=' + form.name"
           >
-            <div class="dunwu-upload"><i class="el-icon-upload" /> 添加文件</div>
+            <div class="dunwu-upload">
+              <i class="el-icon-upload" />
+              添加文件
+            </div>
             <div slot="tip" class="el-upload__tip">可上传任意格式文件，且不超过100M</div>
           </el-upload>
         </el-form-item>
@@ -52,7 +71,13 @@
       </div>
     </el-dialog>
     <!--表格渲染-->
-    <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
+    <el-table
+      ref="table"
+      v-loading="crud.loading"
+      :data="crud.data"
+      style="width: 100%;"
+      @selection-change="crud.selectionChangeHandler"
+    >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="name" label="文件名">
         <template slot-scope="scope">
@@ -76,9 +101,9 @@
         </template>
       </el-table-column>
       <el-table-column prop="path" label="预览图">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <el-image
-            :src=" baseApi + '/file/' + row.type + '/' + row.realName"
+            :src="baseApi + '/file/' + row.type + '/' + row.realName"
             :preview-src-list="[baseApi + '/file/' + row.type + '/' + row.realName]"
             fit="contain"
             lazy
@@ -122,7 +147,7 @@ export default {
     return {
       delAllLoading: false,
       loading: false,
-      headers: { 'Authorization': getToken() },
+      headers: { Authorization: getToken() },
       permission: {
         edit: ['admin', 'storage:edit'],
         del: ['admin', 'storage:del']
@@ -130,10 +155,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
-      'baseApi',
-      'fileUploadApi'
-    ])
+    ...mapGetters(['baseApi', 'fileUploadApi'])
   },
   created() {
     this.crud.optShow.add = false
@@ -162,9 +184,9 @@ export default {
     },
     // 监听上传失败
     handleError(e, file, fileList) {
-      const msg = JSON.parse(e.message)
+      const msg = JSON.parse(e.msg)
       this.$notify({
-        title: msg.message,
+        title: msg.msg,
         type: 'error',
         duration: 2500
       })
@@ -175,10 +197,11 @@ export default {
 </script>
 
 <style scoped>
- ::v-deep .el-image__error, .el-image__placeholder{
-    background: none;
-  }
- ::v-deep .el-image-viewer__wrapper{
-    top: 55px;
-  }
+::v-deep .el-image__error,
+.el-image__placeholder {
+  background: none;
+}
+::v-deep .el-image-viewer__wrapper {
+  top: 55px;
+}
 </style>

@@ -1,16 +1,11 @@
 import { encrypt } from '@/utils/rsaEncrypt'
 import request from '@/utils/request'
 
-export function login(username, password, code, uuid) {
+export function login(data) {
   return request({
     url: 'auth/login',
     method: 'post',
-    data: {
-      username,
-      password,
-      code,
-      uuid
-    }
+    data
   })
 }
 

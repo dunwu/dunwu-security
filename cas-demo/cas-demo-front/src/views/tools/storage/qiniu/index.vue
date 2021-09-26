@@ -176,8 +176,8 @@ export default {
     },
     // 监听上传失败
     handleError(e, file, fileList) {
-      const msg = JSON.parse(e.message)
-      this.crud.notify(CRUD.NOTIFICATION_TYPE.ERROR, msg.message)
+      const msg = JSON.parse(e.msg)
+      this.crud.notify(CRUD.NOTIFICATION_TYPE.ERROR, msg.msg)
     },
     // 下载文件
     download(id) {
@@ -192,7 +192,7 @@ export default {
         })
         .catch(err => {
           this.downloadLoading = false
-          console.log(err.response.data.message)
+          console.log(err.response.data.msg)
         })
     },
     // 同步数据
@@ -212,7 +212,7 @@ export default {
         })
         .catch(err => {
           this.icon = 'el-icon-refresh'
-          console.log(err.response.data.message)
+          console.log(err.response.data.msg)
         })
     }
   }

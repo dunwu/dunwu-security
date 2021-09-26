@@ -21,8 +21,8 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(
   config => {
-    // console.group('%c%s', 'color:blue', '[Http Request]')
-    // console.info('[request info]', config)
+    console.group('%c%s', 'color:blue', '[Http Request]')
+    console.info('[request info]', config)
     if (getToken()) {
       config.headers['Authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
     }
@@ -39,10 +39,10 @@ service.interceptors.request.use(
 // response 拦截器
 service.interceptors.response.use(
   response => {
-    // console.info('[response info]', response)
-    // console.groupEnd()
+    console.info('[response info]', response)
+    console.groupEnd()
     if (response.status < 200 || response.status > 300) {
-      Notification.error({ title: response.message, duration: 5000 })
+      Notification.error({ title: response.msg, duration: 5000 })
       return Promise.reject('error')
     } else {
       if (!response.data) {
@@ -53,7 +53,8 @@ service.interceptors.response.use(
       if (response.headers['content-type'].indexOf('application/json') !== -1) {
         // 包装过的消息体，形式为：{"code":0,"data":{},"message":"成功","ok":true}
         if (response.data.code !== Constant.SUCCESS) {
-          Notification.error({ title: response.data.message, duration: 5000 })
+          console.error('response.data.msg', response.data.msg)
+          Notification.error({ title: response.data.msg, duration: 5000 })
           return Promise.reject('error')
         }
 
@@ -69,11 +70,12 @@ service.interceptors.response.use(
   },
   error => {
     // 兼容blob下载出错json提示
+    console.error('error', error)
     if (error.response.data instanceof Blob && error.response.data.type.toLowerCase().indexOf('json') !== -1) {
       const reader = new FileReader()
       reader.readAsText(error.response.data, 'utf-8')
       reader.onload = function(e) {
-        const errorMsg = JSON.parse(reader.result).message
+        const errorMsg = JSON.parse(reader.result).msg
         Notification.error({ title: errorMsg, duration: 5000 })
       }
     } else {
@@ -97,7 +99,7 @@ service.interceptors.response.use(
           router.push({ path: '/401' })
         } else {
           const statusText = error.response.statusText
-          const errorMsg = error.response.data.message
+          const errorMsg = error.response.data.msg
           if (errorMsg) {
             Notification.error({ title: errorMsg, duration: 5000 })
           } else {

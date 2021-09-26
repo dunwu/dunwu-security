@@ -26,17 +26,12 @@ export default {
       url: '',
       // 新窗口的引用
       newWin: null,
-      loading: false, form: { subject: '', totalAmount: '', body: '' },
+      loading: false,
+      form: { subject: '', totalAmount: '', body: '' },
       rules: {
-        subject: [
-          { required: true, message: '商品名称不能为空', trigger: 'blur' }
-        ],
-        totalAmount: [
-          { required: true, message: '商品价格不能为空', trigger: 'blur' }
-        ],
-        body: [
-          { required: true, message: '商品描述不能为空', trigger: 'blur' }
-        ]
+        subject: [{ required: true, message: '商品名称不能为空', trigger: 'blur' }],
+        totalAmount: [{ required: true, message: '商品价格不能为空', trigger: 'blur' }],
+        body: [{ required: true, message: '商品描述不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -53,26 +48,30 @@ export default {
   },
   methods: {
     doSubmit() {
-      this.$refs['form'].validate((valid) => {
+      this.$refs['form'].validate(valid => {
         if (valid) {
           this.loading = true
           // 先打开一个空的新窗口，再请求
           this.newWin = window.open()
           let url = ''
-          if (/(Android)/i.test(navigator.userAgent)) { // 判断是否为Android手机
+          if (/(Android)/i.test(navigator.userAgent)) {
+            // 判断是否为Android手机
             url = 'aliPay/toPayAsWeb'
-          } else if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) { // 判断是否为苹果手机
+          } else if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+            // 判断是否为苹果手机
             url = 'aliPay/toPayAsWeb'
           } else {
             url = 'aliPay/toPayAsPC'
           }
-          toAliPay(url, this.form).then(res => {
-            this.loading = false
-            this.url = res
-          }).catch(err => {
-            this.loading = false
-            console.log(err.response.data.message)
-          })
+          toAliPay(url, this.form)
+            .then(res => {
+              this.loading = false
+              this.url = res
+            })
+            .catch(err => {
+              this.loading = false
+              console.log(err.response.data.msg)
+            })
         } else {
           return false
         }
@@ -82,5 +81,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -31,7 +31,7 @@ const user = {
       const rememberMe = userInfo.rememberMe
       return new Promise((resolve, reject) => {
         authApi
-          .login(userInfo.username, userInfo.password, userInfo.code, userInfo.uuid)
+          .login(userInfo)
           .then(res => {
             setToken(res.token, rememberMe)
             commit('SET_TOKEN', res.token)
