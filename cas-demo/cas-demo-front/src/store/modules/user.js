@@ -4,7 +4,9 @@ import { getToken, removeToken, setToken } from '@/utils/auth'
 const user = {
   state: {
     token: getToken(),
-    user: {},
+    user: {
+      roleCodes: []
+    },
     roles: [],
     // 第一次加载菜单时用到
     loadMenus: false
@@ -92,10 +94,10 @@ export const logOut = commit => {
 
 export const setUserInfo = (res, commit) => {
   // 如果没有任何权限，则赋予一个默认的权限，避免请求死循环
-  if (res.roles.length === 0) {
+  if (res.user.roles.length === 0) {
     commit('SET_ROLES', ['ROLE_SYSTEM_DEFAULT'])
   } else {
-    commit('SET_ROLES', res.roles)
+    commit('SET_ROLES', res.user.roleCodes)
   }
   commit('SET_USER', res.user)
 }

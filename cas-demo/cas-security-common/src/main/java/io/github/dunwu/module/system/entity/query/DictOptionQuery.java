@@ -38,9 +38,9 @@ public class DictOptionQuery implements Serializable {
     @QueryField
     private String name;
 
-    @ApiModelProperty(value = "权重")
+    @ApiModelProperty(value = "排序")
     @QueryField
-    private Integer weight;
+    private Integer sequence;
 
     @ApiModelProperty(value = "状态")
     @QueryField

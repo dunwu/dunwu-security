@@ -1,6 +1,6 @@
 package io.github.dunwu.module.security.service;
 
-import io.github.dunwu.module.user.entity.dto.UserDto;
+import io.github.dunwu.module.cas.entity.dto.UserDto;
 
 import java.util.List;
 

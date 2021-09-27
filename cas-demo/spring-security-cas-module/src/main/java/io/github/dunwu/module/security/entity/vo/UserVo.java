@@ -1,7 +1,7 @@
 package io.github.dunwu.module.security.entity.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.github.dunwu.module.user.entity.dto.UserDto;
+import io.github.dunwu.module.cas.entity.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,8 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 用户信息实体
@@ -63,10 +61,6 @@ public class UserVo implements UserDetails {
     @JsonIgnore
     public boolean isEnabled() {
         return user.getEnabled();
-    }
-
-    public Set<String> getRoles() {
-        return authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
     }
 
 }

@@ -106,7 +106,7 @@
             <span v-else>{{ scope.row.keyType }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="非空" width="70px">
+        <el-table-column label="非空" width="70px">
           <template slot-scope="scope">
             <!--所有的键必须不为空-->
             <el-checkbox
@@ -116,28 +116,28 @@
             <el-checkbox v-else v-model="data[scope.$index].notNull" disabled />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="出现在列表" width="70px">
+        <el-table-column label="出现在列表" width="70px">
           <template slot-scope="scope">
             <el-checkbox v-model="data[scope.$index].enableList" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="出现在表单" width="70px">
+        <el-table-column label="出现在表单" width="70px">
           <template slot-scope="scope">
             <el-checkbox v-if="data[scope.$index].keyType !== 'PRI'" v-model="data[scope.$index].enableForm" />
             <el-checkbox v-else v-model="data[scope.$index].enableForm" disabled />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="出现在查询" width="70px">
+        <el-table-column label="出现在查询" width="70px">
           <template slot-scope="scope">
             <el-checkbox v-model="data[scope.$index].enableQuery" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="允许排序" width="70px">
+        <el-table-column label="允许排序" width="70px">
           <template slot-scope="scope">
             <el-checkbox v-model="data[scope.$index].enableSort" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="允许校验" width="70px">
+        <el-table-column label="允许校验" width="70px">
           <template slot-scope="scope">
             <el-checkbox v-model="data[scope.$index].enableValidate" />
           </template>

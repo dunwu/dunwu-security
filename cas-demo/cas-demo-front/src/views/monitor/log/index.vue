@@ -36,7 +36,7 @@
           </el-form>
         </template>
       </el-table-column>
-      <el-table-column prop="logType" label="日志级别" align="center">
+      <el-table-column prop="logType" label="日志级别">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.logType === 'ERROR'" type="danger">{{ scope.row.logType }}</el-tag>
           <el-tag v-else type="primary">{{ scope.row.logType }}</el-tag>
@@ -47,7 +47,7 @@
       <el-table-column :show-overflow-tooltip="true" prop="address" label="IP来源" />
       <el-table-column prop="description" label="描述" />
       <el-table-column prop="browser" label="浏览器" />
-      <el-table-column prop="time" label="请求耗时" align="center">
+      <el-table-column prop="time" label="请求耗时">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.time <= 300">{{ scope.row.time }}ms</el-tag>
           <el-tag v-else-if="scope.row.time <= 1000" type="warning">{{ scope.row.time }}ms</el-tag>

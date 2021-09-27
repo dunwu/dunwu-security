@@ -1,7 +1,9 @@
 package io.github.dunwu.module.security.service;
 
 import cn.dev33.satoken.stp.SaLoginModel;
+import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
@@ -15,10 +17,11 @@ import io.github.dunwu.module.security.entity.dto.OnlineUserDto;
 import io.github.dunwu.module.security.entity.vo.LoginSuccessVo;
 import io.github.dunwu.module.security.entity.vo.UserVo;
 import io.github.dunwu.module.security.util.CaptchaUtil;
-import io.github.dunwu.module.user.entity.dto.UserDto;
-import io.github.dunwu.module.user.service.DeptService;
-import io.github.dunwu.module.user.service.RoleService;
-import io.github.dunwu.module.user.service.UserService;
+import io.github.dunwu.module.cas.entity.dto.MenuDto;
+import io.github.dunwu.module.cas.entity.dto.RoleDto;
+import io.github.dunwu.module.cas.entity.dto.UserDto;
+import io.github.dunwu.module.cas.service.MenuService;
+import io.github.dunwu.module.cas.service.UserService;
 import io.github.dunwu.tool.core.exception.AuthException;
 import io.github.dunwu.tool.data.redis.RedisHelper;
 import io.github.dunwu.tool.data.util.PageUtil;
@@ -27,11 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 认证服务
@@ -42,13 +47,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements StpInterface {
 
     private final RSA rsa;
     private final RedisHelper redisHelper;
     private final UserService userService;
-    private final DeptService deptService;
-    private final RoleService roleService;
+    private final MenuService menuService;
     private final DunwuWebSecurityProperties securityProperties;
 
     /**
@@ -164,6 +168,46 @@ public class AuthService {
             PageUtil.toList(pageable.getPageNumber(), pageable.getPageSize(), onlineUserDtos),
             onlineUserDtos.size()
         );
+    }
+
+    @Override
+    public List<String> getPermissionList(Object loginId, String loginType) {
+
+        UserDto userDto = userService.pojoById((Serializable) loginId);
+        if (CollectionUtil.isEmpty(userDto.getRoles())) {
+            return new ArrayList<>();
+        }
+
+        List<String> permissionList = new ArrayList<>();
+        for (RoleDto role : userDto.getRoles()) {
+            if (role.getCode().equals("admin")) {
+                List<MenuDto> menuDtos = menuService.pojoList();
+                if (CollectionUtil.isEmpty(menuDtos)) {
+                    return new ArrayList<>();
+                }
+
+                return menuDtos.stream().map(MenuDto::getPermission).collect(Collectors.toList());
+            }
+
+            if (CollectionUtil.isNotEmpty(role.getMenus())) {
+                for (MenuDto menu : role.getMenus()) {
+                    permissionList.add(menu.getPermission());
+                }
+            }
+        }
+        return permissionList;
+    }
+
+    @Override
+    public List<String> getRoleList(Object loginId, String loginType) {
+        UserDto userDto = userService.pojoById((Serializable) loginId);
+        if (CollectionUtil.isEmpty(userDto.getRoles())) {
+            return new ArrayList<>();
+        }
+
+        return userDto.getRoles().stream()
+            .map(RoleDto::getCode)
+            .collect(Collectors.toList());
     }
 
     /**

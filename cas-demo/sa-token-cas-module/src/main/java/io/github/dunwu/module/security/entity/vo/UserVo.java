@@ -1,9 +1,9 @@
 package io.github.dunwu.module.security.entity.vo;
 
 import cn.hutool.core.collection.CollectionUtil;
-import io.github.dunwu.module.user.entity.dto.MenuDto;
-import io.github.dunwu.module.user.entity.dto.RoleDto;
-import io.github.dunwu.module.user.entity.dto.UserDto;
+import io.github.dunwu.module.cas.entity.dto.MenuDto;
+import io.github.dunwu.module.cas.entity.dto.RoleDto;
+import io.github.dunwu.module.cas.entity.dto.UserDto;
 import lombok.Data;
 
 import java.util.Collection;

@@ -1,7 +1,10 @@
 package io.github.dunwu;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.SaTokenException;
 import cn.hutool.core.util.StrUtil;
 import io.github.dunwu.tool.core.constant.enums.ResultStatus;
+import io.github.dunwu.tool.core.exception.AuthException;
 import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.exception.DataException;
 import io.github.dunwu.tool.web.constant.WebConstant;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Set;
-import javax.security.auth.message.AuthException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -100,6 +102,28 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(AuthException.class)
     public DataResult<?> handleAuthException(final AuthException e) {
+        log.error("认证失败，方法: {}, message: {}", e.getClass().getCanonicalName(), e.getLocalizedMessage());
+        return DataResult.fail(ResultStatus.HTTP_UNAUTHORIZED.getCode(), e.getLocalizedMessage());
+    }
+
+    /**
+     * 处理 Sa Token 认证异常
+     *
+     * @param e MethodArgumentNotValidException
+     * @return {@link DataResult}
+     */
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler({ NotLoginException.class })
+    private DataResult<?> handleSaTokenException(final NotLoginException e) {
+        log.error("认证失败，方法: {}, message: {}", e.getClass().getCanonicalName(), e.getLocalizedMessage());
+        return DataResult.fail(ResultStatus.HTTP_UNAUTHORIZED.getCode(), e.getLocalizedMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler({ SaTokenException.class })
+    private DataResult<?> handleSaTokenException(final SaTokenException e) {
         log.error("认证失败，方法: {}, message: {}", e.getClass().getCanonicalName(), e.getLocalizedMessage());
         return DataResult.fail(ResultStatus.HTTP_UNAUTHORIZED.getCode(), e.getLocalizedMessage());
     }
