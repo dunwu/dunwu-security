@@ -88,9 +88,9 @@ public interface DeptService extends IService {
     boolean deleteBatchByIds(Collection<? extends Serializable> ids);
 
     /**
-     * 根据 query 查询 {@link DeptDto} 列表
+     * 查询 {@link DeptDto} 全量数据列表
      *
-     * @return {@link List< DeptDto >}
+     * @return {@link List<DeptDto>}
      */
     List<DeptDto> pojoList();
 
@@ -109,7 +109,7 @@ public interface DeptService extends IService {
      * @param pageable 分页查询条件
      * @return {@link Page<DeptDto>}
      */
-    Page<DeptDto> pojoPageByQuery(DeptQuery query, Pageable pageable);
+    Page<DeptDto> pojoSpringPageByQuery(DeptQuery query, Pageable pageable);
 
     /**
      * 根据 id 查询 {@link DeptDto}

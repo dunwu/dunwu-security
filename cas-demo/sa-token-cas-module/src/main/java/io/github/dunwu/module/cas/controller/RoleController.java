@@ -1,11 +1,11 @@
 package io.github.dunwu.module.cas.controller;
 
 import cn.hutool.core.lang.Dict;
-import io.github.dunwu.module.common.annotation.AppLog;
 import io.github.dunwu.module.cas.entity.Role;
 import io.github.dunwu.module.cas.entity.dto.RoleDto;
 import io.github.dunwu.module.cas.entity.query.RoleQuery;
 import io.github.dunwu.module.cas.service.RoleService;
+import io.github.dunwu.tool.web.log.annotation.AppLog;
 import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.validator.annotation.AddCheck;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
@@ -82,7 +82,7 @@ public class RoleController {
     @ApiOperation("根据 query 和 pageable 条件，分页查询 SysRoleDto 记录")
     @GetMapping("page")
     public DataResult page(RoleQuery query, Pageable pageable) {
-        return DataResult.ok(service.pojoPageByQuery(query, pageable));
+        return DataResult.ok(service.pojoSpringPageByQuery(query, pageable));
     }
 
     // @PreAuthorize("@exp.check('role:view')")

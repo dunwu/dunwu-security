@@ -13,15 +13,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 系统菜单信息 Query 类
+ * 菜单 Query 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-24
+ * @since 2021-09-28
  */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "MenuQuery", description = "系统菜单信息")
+@ApiModel(value = "MenuQuery", description = "菜单")
 public class MenuQuery implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -35,7 +35,7 @@ public class MenuQuery implements Serializable {
 
     @ApiModelProperty(value = "创建时间")
     @QueryField(value = "createTime", type = QueryField.QueryType.BETWEEN)
-    @JsonFormat(shape = JsonFormat.Shape.ARRAY, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private List<LocalDateTime> createTimeRange;
 
 }

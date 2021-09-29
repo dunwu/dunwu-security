@@ -83,8 +83,8 @@ public class UserServiceImpl extends ServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> pojoPageByQuery(Object query, Pageable pageable) {
-        return userDao.pojoPageByQuery(query, pageable, this::doToDto);
+    public Page<UserDto> pojoSpringPageByQuery(Object query, Pageable pageable) {
+        return userDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class UserServiceImpl extends ServiceImpl implements UserService {
 
     @Override
     public void exportPage(Object query, Pageable pageable, HttpServletResponse response) {
-        Page<UserDto> page = userDao.pojoPageByQuery(query, pageable, this::doToDto);
+        Page<UserDto> page = userDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
         export(page.getContent(), response);
     }
 

@@ -37,8 +37,7 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     private static boolean addCallback = true;
 
     /**
-     * 针对 某些初始化方法，在SpringContextHolder 未初始化时 提交回调方法。
-     * 在SpringContextHolder 初始化后，进行回调使用
+     * 针对 某些初始化方法，在SpringContextHolder 未初始化时 提交回调方法。 在SpringContextHolder 初始化后，进行回调使用
      *
      * @param callBack 回调函数
      */
@@ -111,7 +110,7 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     private static void assertContextInjected() {
         if (applicationContext == null) {
             throw new IllegalStateException("applicaitonContext属性未注入, 请在applicationContext" +
-                    ".xml中定义SpringContextHolder或在SpringBoot启动类中注册SpringContextHolder.");
+                ".xml中定义SpringContextHolder或在SpringBoot启动类中注册SpringContextHolder.");
         }
     }
 
@@ -120,7 +119,7 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
      */
     private static void clearHolder() {
         log.debug("清除SpringContextHolder中的ApplicationContext:"
-                + applicationContext);
+            + applicationContext);
         applicationContext = null;
     }
 
@@ -132,7 +131,8 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         if (SpringContextHolder.applicationContext != null) {
-            log.warn("SpringContextHolder中的ApplicationContext被覆盖, 原有ApplicationContext为:" + SpringContextHolder.applicationContext);
+            log.warn("SpringContextHolder中的ApplicationContext被覆盖, 原有ApplicationContext为:"
+                + SpringContextHolder.applicationContext);
         }
         SpringContextHolder.applicationContext = applicationContext;
         if (addCallback) {
@@ -143,4 +143,5 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
         }
         SpringContextHolder.addCallback = false;
     }
+
 }

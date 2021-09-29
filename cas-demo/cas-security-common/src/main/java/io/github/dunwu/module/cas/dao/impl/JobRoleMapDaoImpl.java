@@ -7,10 +7,10 @@ import io.github.dunwu.tool.data.annotation.Dao;
 import io.github.dunwu.tool.data.mybatis.BaseExtDaoImpl;
 
 /**
- * 系统岗位/角色关系表 Dao 类
+ * 岗位角色关联 Dao 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-30
+ * @since 2021-09-28
  */
 @Dao
 public class JobRoleMapDaoImpl extends BaseExtDaoImpl<JobRoleMapMapper, JobRoleMap> implements JobRoleMapDao {

@@ -1,9 +1,11 @@
 package io.github.dunwu.module.cas.controller;
 
-import io.github.dunwu.module.common.annotation.AppLog;
+import io.github.dunwu.module.cas.entity.Dept;
 import io.github.dunwu.module.cas.entity.dto.DeptDto;
 import io.github.dunwu.module.cas.entity.query.DeptQuery;
 import io.github.dunwu.module.cas.service.DeptService;
+import io.github.dunwu.tool.web.log.annotation.AppLog;
+import io.github.dunwu.tool.data.DataListResult;
 import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.validator.annotation.AddCheck;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
@@ -15,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.servlet.http.HttpServletResponse;
@@ -34,96 +35,108 @@ public class DeptController {
 
     private final DeptService service;
 
-    @AppLog("添加一条 SysDept 记录")
+    @AppLog("添加一条 Dept 记录")
+    @ApiOperation("添加一条 Dept 记录")
     @PreAuthorize("@exp.check('dept:add')")
-    @ApiOperation("添加一条 SysDept 记录")
     @PostMapping("add")
-    public DataResult add(@Validated(AddCheck.class) @RequestBody DeptDto entity) {
-        service.save(entity);
-        return DataResult.ok();
+    public DataResult<Boolean> add(@Validated(AddCheck.class) @RequestBody Dept entity) {
+        return DataResult.ok(service.insert(entity));
     }
 
-    @AppLog("更新一条 SysDept 记录")
+    @AppLog("批量添加 Dept 记录")
+    @ApiOperation("批量添加 Dept 记录")
+    @PreAuthorize("@exp.check('dept:add')")
+    @PostMapping("add/batch")
+    public DataResult<Boolean> addBatch(@Validated(AddCheck.class) @RequestBody Collection<Dept> list) {
+        return DataResult.ok(service.insertBatch(list));
+    }
+
+    @AppLog("根据 ID 更新一条 Dept 记录")
+    @ApiOperation("根据 ID 更新一条 Dept 记录")
     @PreAuthorize("@exp.check('dept:edit')")
-    @ApiOperation("更新一条 SysDept 记录")
     @PostMapping("edit")
-    public DataResult edit(@Validated(EditCheck.class) @RequestBody DeptDto entity) {
-        service.updateById(entity);
-        return DataResult.ok();
+    public DataResult<Boolean> edit(@Validated(EditCheck.class) @RequestBody Dept entity) {
+        return DataResult.ok(service.updateById(entity));
     }
 
-    @AppLog("删除一条 SysDept 记录")
+    @AppLog("根据 ID 批量更新 Dept 记录")
+    @ApiOperation("根据 ID 批量更新 Dept 记录")
+    @PreAuthorize("@exp.check('dept:edit')")
+    @PostMapping("edit/batch")
+    public DataResult<Boolean> editBatch(@Validated(EditCheck.class) @RequestBody Collection<Dept> list) {
+        return DataResult.ok(service.updateBatchById(list));
+    }
+
+    @AppLog("根据 ID 删除一条 Dept 记录")
+    @ApiOperation("根据 ID 删除一条 Dept 记录")
     @PreAuthorize("@exp.check('dept:del')")
-    @ApiOperation("删除一条 SysDept 记录")
     @PostMapping("del/{id}")
-    public DataResult deleteById(@PathVariable Serializable id) {
-        service.removeById(id);
-        return DataResult.ok();
+    public DataResult<Boolean> deleteById(@PathVariable Serializable id) {
+        return DataResult.ok(service.deleteById(id));
     }
 
-    @AppLog("根据 ID 集合批量删除 SysDept 记录")
+    @AppLog("根据 ID 列表批量删除 Dept 记录")
+    @ApiOperation("根据 ID 列表批量删除 Dept 记录")
     @PreAuthorize("@exp.check('dept:del')")
-    @ApiOperation("根据 ID 集合批量删除 SysDept 记录")
     @PostMapping("del/batch")
-    public DataResult deleteByIds(@RequestBody Collection<Serializable> ids) {
-        service.removeByIds(ids);
-        return DataResult.ok();
+    public DataResult<Boolean> deleteBatchByIds(@RequestBody Collection<? extends Serializable> ids) {
+        return DataResult.ok(service.deleteBatchByIds(ids));
     }
 
+    @ApiOperation("根据 DeptQuery 查询 DeptDto 列表")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 query 条件，查询匹配条件的 SysDeptDto 列表")
     @GetMapping("list")
-    public DataResult list(DeptQuery query) {
-        return DataResult.ok(service.pojoListByQuery(query));
+    public DataListResult<DeptDto> list(DeptQuery query) {
+        return DataListResult.ok(service.pojoListByQuery(query));
     }
 
+    @ApiOperation("根据 DeptQuery 和 Pageable 分页查询 DeptDto 列表")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 query 和 pageable 条件，分页查询 SysDeptDto 记录")
     @GetMapping("page")
     public DataResult page(DeptQuery query, Pageable pageable) {
-        return DataResult.ok(service.pojoPageByQuery(query, pageable));
+        return DataResult.ok(service.pojoSpringPageByQuery(query, pageable));
     }
 
+    @ApiOperation("根据 id 查询 DeptDto")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 query 条件，查询匹配条件的总记录数")
-    @GetMapping("count")
-    public DataResult count(DeptQuery query) {
-        return DataResult.ok(service.countByQuery(query));
-    }
-
-    @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 ID 查询 SysDeptDto 记录")
     @GetMapping("{id}")
-    public DataResult getById(@PathVariable Serializable id) {
+    public DataResult<DeptDto> getById(@PathVariable Serializable id) {
         return DataResult.ok(service.pojoById(id));
     }
 
+    @ApiOperation("根据 DeptQuery 查询匹配条件的记录数")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 query 和 pageable 条件批量导出 SysDeptDto 列表数据")
-    @GetMapping("export/page")
-    public void exportPage(DeptQuery query, Pageable pageable, HttpServletResponse response) throws IOException {
-        service.exportPage(query, pageable, response);
+    @GetMapping("count")
+    public DataResult<Integer> count(DeptQuery query) {
+        return DataResult.ok(service.countByQuery(query));
     }
 
+    @ApiOperation("根据 id 列表查询 DeptDto 列表，并导出 excel 表单")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 ID 集合批量导出 SysDeptDto 列表数据")
     @PostMapping("export/list")
-    public void exportList(@RequestBody Collection<Serializable> ids, HttpServletResponse response) throws IOException {
+    public void exportList(@RequestBody Collection<? extends Serializable> ids, HttpServletResponse response) {
         service.exportList(ids, response);
     }
 
+    @ApiOperation("根据 DeptQuery 和 Pageable 分页查询 DeptDto 列表，并导出 excel 表单")
     @PreAuthorize("@exp.check('dept:view')")
-    @ApiOperation("根据 query 条件，返回 SysDeptDto 树形列表")
-    @GetMapping("treeList")
-    public DataResult treeList(DeptQuery query) {
-        return DataResult.ok(service.treeList(query));
+    @GetMapping("export/page")
+    public void exportPage(DeptQuery query, Pageable pageable, HttpServletResponse response) {
+        service.exportPage(query, pageable, response);
     }
 
+    @ApiOperation("根据 query 条件，返回 DeptDto 树形列表")
     @PreAuthorize("@exp.check('dept:view')")
+    @GetMapping("treeList")
+    public DataListResult<DeptDto> treeList(DeptQuery query) {
+        return DataListResult.ok(service.treeList(query));
+    }
+
     @ApiOperation("根据ID获取同级与上级数据")
+    @PreAuthorize("@exp.check('dept:view')")
     @PostMapping("superiorTreeList")
-    public DataResult superiorTreeList(@RequestBody Collection<Serializable> ids) {
-        return DataResult.ok(service.treeListByIds(ids));
+    public DataListResult<DeptDto> superiorTreeList(@RequestBody Collection<Serializable> ids) {
+        return DataListResult.ok(service.treeListByIds(ids));
     }
 
     // @Log("更新一条 SysDept 记录的关联关系")

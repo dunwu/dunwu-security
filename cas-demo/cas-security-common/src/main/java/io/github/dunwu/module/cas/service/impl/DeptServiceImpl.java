@@ -107,8 +107,8 @@ public class DeptServiceImpl extends ServiceImpl implements DeptService {
     }
 
     @Override
-    public Page<DeptDto> pojoPageByQuery(DeptQuery query, Pageable pageable) {
-        return deptDao.pojoPageByQuery(query, pageable, this::doToDto);
+    public Page<DeptDto> pojoSpringPageByQuery(DeptQuery query, Pageable pageable) {
+        return deptDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
     }
 
     @Override
@@ -138,26 +138,8 @@ public class DeptServiceImpl extends ServiceImpl implements DeptService {
 
     @Override
     public void exportPage(DeptQuery query, Pageable pageable, HttpServletResponse response) {
-        Page<DeptDto> page = deptDao.pojoPageByQuery(query, pageable, this::doToDto);
+        Page<DeptDto> page = deptDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
         exportDtoList(page.getContent(), response);
-    }
-
-    @Override
-    public DeptDto doToDto(Dept model) {
-        if (model == null) {
-            return null;
-        }
-
-        return BeanUtil.toBean(model, DeptDto.class);
-    }
-
-    @Override
-    public Dept dtoToDo(DeptDto dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        return BeanUtil.toBean(dto, Dept.class);
     }
 
     /**
@@ -184,6 +166,24 @@ public class DeptServiceImpl extends ServiceImpl implements DeptService {
             mapList.add(map);
         }
         ServletUtil.downloadExcel(response, mapList);
+    }
+
+    @Override
+    public DeptDto doToDto(Dept model) {
+        if (model == null) {
+            return null;
+        }
+
+        return BeanUtil.toBean(model, DeptDto.class);
+    }
+
+    @Override
+    public Dept dtoToDo(DeptDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return BeanUtil.toBean(dto, Dept.class);
     }
 
     @Override

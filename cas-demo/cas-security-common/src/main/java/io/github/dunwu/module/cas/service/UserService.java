@@ -61,7 +61,7 @@ public interface UserService extends IService {
      * @param pageable 分页查询条件
      * @return {@link Page <SysUserDto>}
      */
-    Page<UserDto> pojoPageByQuery(Object query, Pageable pageable);
+    Page<UserDto> pojoSpringPageByQuery(Object query, Pageable pageable);
 
     /**
      * 根据 query 查询 {@link UserDto} 列表

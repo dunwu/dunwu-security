@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 
 /**
- * 系统菜单信息 Dto 类
+ * 菜单 Dto 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-24
+ * @since 2021-09-28
  */
 @Data
 @Accessors(chain = true)
-@ApiModel(value = "MenuDto", description = "系统菜单信息")
+@ApiModel(value = "MenuDto", description = "菜单")
 public class MenuDto implements Serializable, Comparable<MenuDto> {
 
     private static final long serialVersionUID = 1L;
@@ -30,47 +30,41 @@ public class MenuDto implements Serializable, Comparable<MenuDto> {
     @ApiModelProperty(value = "上级菜单ID")
     private Long pid;
 
+    @ApiModelProperty(value = "子菜单数目")
+    private Integer subCount;
+
+    @ApiModelProperty(value = "菜单类型")
+    private Integer type;
+
     @ApiModelProperty(value = "菜单标题")
     private String title;
 
-    @ApiModelProperty(value = "菜单名称")
+    @ApiModelProperty(value = "组件名称")
     private String name;
-
-    @ApiModelProperty(value = "菜单图标")
-    private String icon;
-
-    @ApiModelProperty(value = "菜单链接地址")
-    private String path;
-
-    @ApiModelProperty(value = "类型")
-    private Integer type;
 
     @ApiModelProperty(value = "组件")
     private String component;
 
-    @ApiModelProperty(value = "组件名称")
-    private String componentName;
-
-    @ApiModelProperty(value = "权限")
-    private String permission;
-
     @ApiModelProperty(value = "排序")
     private Integer sequence;
 
-    @ApiModelProperty(value = "是否为外链")
+    @ApiModelProperty(value = "图标")
+    private String icon;
+
+    @ApiModelProperty(value = "链接地址")
+    private String path;
+
+    @ApiModelProperty(value = "是否外链")
     private Boolean iFrame;
 
-    @ApiModelProperty(value = "是否缓存")
+    @ApiModelProperty(value = "缓存")
     private Boolean cache;
 
-    @ApiModelProperty(value = "是否隐藏")
+    @ApiModelProperty(value = "隐藏")
     private Boolean hidden;
 
-    @ApiModelProperty(value = "状态")
-    private Boolean enabled;
-
-    @ApiModelProperty(value = "备注")
-    private String note;
+    @ApiModelProperty(value = "权限")
+    private String permission;
 
     @ApiModelProperty(value = "创建者")
     private String createBy;
@@ -88,6 +82,9 @@ public class MenuDto implements Serializable, Comparable<MenuDto> {
 
     // ========================================================================
     // 以下字段在构建树形列表时会自动填充
+
+    @ApiModelProperty(value = "组件名称")
+    private String componentName;
 
     @ApiModelProperty(value = "标签")
     private String label;

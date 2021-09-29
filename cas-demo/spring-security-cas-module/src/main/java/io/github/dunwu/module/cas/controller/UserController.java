@@ -1,9 +1,9 @@
 package io.github.dunwu.module.cas.controller;
 
-import io.github.dunwu.module.common.annotation.AppLog;
 import io.github.dunwu.module.cas.entity.dto.UserDto;
 import io.github.dunwu.module.cas.entity.query.UserQuery;
 import io.github.dunwu.module.cas.service.UserService;
+import io.github.dunwu.tool.web.log.annotation.AppLog;
 import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.validator.annotation.AddCheck;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 @Api(tags = "系统：用户管理")
 @RequiredArgsConstructor
 public class UserController {
+
     public static final String INIT_PASSWORD = "123456";
     private final UserService service;
     private final PasswordEncoder passwordEncoder;
@@ -84,7 +85,7 @@ public class UserController {
     @ApiOperation("根据 query 和 pageable 条件，分页查询 SysUserDto 记录")
     @GetMapping("page")
     public DataResult page(UserQuery query, Pageable pageable) {
-        return DataResult.ok(service.pojoPageByQuery(query, pageable));
+        return DataResult.ok(service.pojoSpringPageByQuery(query, pageable));
     }
 
     @PreAuthorize("@exp.check('user:view')")

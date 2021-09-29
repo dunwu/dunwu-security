@@ -9,6 +9,11 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.wf.captcha.base.Captcha;
+import io.github.dunwu.module.cas.entity.dto.MenuDto;
+import io.github.dunwu.module.cas.entity.dto.RoleDto;
+import io.github.dunwu.module.cas.entity.dto.UserDto;
+import io.github.dunwu.module.cas.service.MenuService;
+import io.github.dunwu.module.cas.service.UserService;
 import io.github.dunwu.module.security.config.DunwuWebSecurityProperties;
 import io.github.dunwu.module.security.constant.enums.CaptchaTypeEnum;
 import io.github.dunwu.module.security.entity.dto.CaptchaImageDto;
@@ -17,11 +22,6 @@ import io.github.dunwu.module.security.entity.dto.OnlineUserDto;
 import io.github.dunwu.module.security.entity.vo.LoginSuccessVo;
 import io.github.dunwu.module.security.entity.vo.UserVo;
 import io.github.dunwu.module.security.util.CaptchaUtil;
-import io.github.dunwu.module.cas.entity.dto.MenuDto;
-import io.github.dunwu.module.cas.entity.dto.RoleDto;
-import io.github.dunwu.module.cas.entity.dto.UserDto;
-import io.github.dunwu.module.cas.service.MenuService;
-import io.github.dunwu.module.cas.service.UserService;
 import io.github.dunwu.tool.core.exception.AuthException;
 import io.github.dunwu.tool.data.redis.RedisHelper;
 import io.github.dunwu.tool.data.util.PageUtil;
@@ -54,6 +54,46 @@ public class AuthService implements StpInterface {
     private final UserService userService;
     private final MenuService menuService;
     private final DunwuWebSecurityProperties securityProperties;
+
+    @Override
+    public List<String> getPermissionList(Object loginId, String loginType) {
+
+        UserDto userDto = userService.pojoById((Serializable) loginId);
+        if (CollectionUtil.isEmpty(userDto.getRoles())) {
+            return new ArrayList<>();
+        }
+
+        List<String> permissionList = new ArrayList<>();
+        for (RoleDto role : userDto.getRoles()) {
+            if (role.getCode().equals("admin")) {
+                List<MenuDto> menuDtos = menuService.pojoList();
+                if (CollectionUtil.isEmpty(menuDtos)) {
+                    return new ArrayList<>();
+                }
+
+                return menuDtos.stream().map(MenuDto::getPermission).collect(Collectors.toList());
+            }
+
+            if (CollectionUtil.isNotEmpty(role.getMenus())) {
+                for (MenuDto menu : role.getMenus()) {
+                    permissionList.add(menu.getPermission());
+                }
+            }
+        }
+        return permissionList;
+    }
+
+    @Override
+    public List<String> getRoleList(Object loginId, String loginType) {
+        UserDto userDto = userService.pojoById((Serializable) loginId);
+        if (CollectionUtil.isEmpty(userDto.getRoles())) {
+            return new ArrayList<>();
+        }
+
+        return userDto.getRoles().stream()
+            .map(RoleDto::getCode)
+            .collect(Collectors.toList());
+    }
 
     /**
      * 获取当前用户身份信息
@@ -99,8 +139,8 @@ public class AuthService implements StpInterface {
         if (loginDto.getRememberMe()) {
             StpUtil.login(userDto.getId(), true);
         } else {
-            StpUtil.login(userDto.getId(), false);
-            StpUtil.login(10001, new SaLoginModel()
+            // StpUtil.login(userDto.getId(), false);
+            StpUtil.login(userDto.getId(), new SaLoginModel()
                 // .setDevice("PC") // 此次登录的客户端设备标识, 用于[同端互斥登录]时指定此次登录的设备名称
                 .setIsLastingCookie(false) // 是否为持久Cookie（临时Cookie在浏览器关闭时会自动删除，持久Cookie在重新打开后依然存在）
                 .setTimeout(securityProperties.getExpiration()) // 指定此次登录token的有效期, 单位:秒 （如未指定，自动取全局配置的timeout值）
@@ -168,46 +208,6 @@ public class AuthService implements StpInterface {
             PageUtil.toList(pageable.getPageNumber(), pageable.getPageSize(), onlineUserDtos),
             onlineUserDtos.size()
         );
-    }
-
-    @Override
-    public List<String> getPermissionList(Object loginId, String loginType) {
-
-        UserDto userDto = userService.pojoById((Serializable) loginId);
-        if (CollectionUtil.isEmpty(userDto.getRoles())) {
-            return new ArrayList<>();
-        }
-
-        List<String> permissionList = new ArrayList<>();
-        for (RoleDto role : userDto.getRoles()) {
-            if (role.getCode().equals("admin")) {
-                List<MenuDto> menuDtos = menuService.pojoList();
-                if (CollectionUtil.isEmpty(menuDtos)) {
-                    return new ArrayList<>();
-                }
-
-                return menuDtos.stream().map(MenuDto::getPermission).collect(Collectors.toList());
-            }
-
-            if (CollectionUtil.isNotEmpty(role.getMenus())) {
-                for (MenuDto menu : role.getMenus()) {
-                    permissionList.add(menu.getPermission());
-                }
-            }
-        }
-        return permissionList;
-    }
-
-    @Override
-    public List<String> getRoleList(Object loginId, String loginType) {
-        UserDto userDto = userService.pojoById((Serializable) loginId);
-        if (CollectionUtil.isEmpty(userDto.getRoles())) {
-            return new ArrayList<>();
-        }
-
-        return userDto.getRoles().stream()
-            .map(RoleDto::getCode)
-            .collect(Collectors.toList());
     }
 
     /**

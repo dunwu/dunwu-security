@@ -1,8 +1,6 @@
 package io.github.dunwu.module.security.controller;
 
-import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
 import io.github.dunwu.module.security.constant.enums.CodeBiEnum;
 import io.github.dunwu.module.security.constant.enums.CodeEnum;
 import io.github.dunwu.module.security.entity.dto.CaptchaImageDto;
@@ -15,11 +13,9 @@ import io.github.dunwu.tool.data.redis.RedisHelper;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Objects;
 import javax.validation.Valid;
@@ -100,23 +96,22 @@ public class AuthController {
     }
 
     // 配置SSO相关参数
-    @Autowired
-    private void configSso(SaTokenConfig cfg) {
-        cfg.sso
-            // 配置：未登录时返回的View
-            .setNotLoginView(() -> {
-                return new ModelAndView("sa-login.html");
-            })
-            // 配置：登录处理函数
-            .setDoLoginHandle((name, pwd) -> {
-                // 此处仅做模拟登录，真实环境应该查询数据进行登录
-                if ("sa".equals(name) && "123456".equals(pwd)) {
-                    StpUtil.login(10001);
-                    return SaResult.ok("登录成功！").setData(StpUtil.getTokenValue());
-                }
-                return SaResult.error("登录失败！");
-            })
-        ;
-    }
-
+    // @Autowired
+    // private void configSso(SaTokenConfig cfg) {
+    //     cfg.sso
+    //         // 配置：未登录时返回的View
+    //         .setNotLoginView(() -> {
+    //             return new ModelAndView("sa-login.html");
+    //         })
+    //         // 配置：登录处理函数
+    //         .setDoLoginHandle((name, pwd) -> {
+    //             // 此处仅做模拟登录，真实环境应该查询数据进行登录
+    //             if ("sa".equals(name) && "123456".equals(pwd)) {
+    //                 StpUtil.login(10001);
+    //                 return SaResult.ok("登录成功！").setData(StpUtil.getTokenValue());
+    //             }
+    //             return SaResult.error("登录失败！");
+    //         })
+    //     ;
+    // }
 }

@@ -6,10 +6,10 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import io.github.dunwu.module.security.constant.enums.DataScopeEnum;
 import io.github.dunwu.module.security.entity.vo.UserVo;
-import io.github.dunwu.module.security.service.SecurityService;
 import io.github.dunwu.module.cas.entity.dto.UserDto;
 import io.github.dunwu.module.cas.service.UserService;
 import io.github.dunwu.tool.core.exception.AuthException;
+import io.github.dunwu.tool.web.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

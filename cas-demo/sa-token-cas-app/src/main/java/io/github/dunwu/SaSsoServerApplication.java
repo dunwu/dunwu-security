@@ -1,10 +1,14 @@
 package io.github.dunwu;
 
+import io.github.dunwu.module.sys.service.LogService;
+import io.github.dunwu.tool.web.log.aspect.AppLogAspect;
+import io.github.dunwu.tool.web.security.SecurityService;
 import io.swagger.annotations.Api;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +33,11 @@ public class SaSsoServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(SaSsoServerApplication.class, args);
         System.out.println("\nSa-Token-SSO 认证中心启动成功");
+    }
+
+    @Bean
+    public AppLogAspect appLogAspect(LogService logService, SecurityService securityService) {
+        return new AppLogAspect(logService, securityService);
     }
 
 }

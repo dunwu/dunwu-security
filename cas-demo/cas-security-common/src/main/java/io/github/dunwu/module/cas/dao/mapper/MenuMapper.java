@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.dunwu.module.cas.entity.Menu;
 
 /**
- * 系统菜单信息 Mapper 接口
+ * 菜单 Mapper 接口
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-24
+ * @since 2021-09-28
  */
 public interface MenuMapper extends BaseMapper<Menu> {
 

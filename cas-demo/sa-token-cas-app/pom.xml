@@ -45,6 +45,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
+    <!--Spring boot Aop-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
     <!-- Sa-Token 权限认证, 在线文档：http://sa-token.dev33.cn/ -->
     <dependency>
       <groupId>cn.dev33</groupId>

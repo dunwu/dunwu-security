@@ -10,6 +10,7 @@ import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.PageResult;
 import io.github.dunwu.tool.data.validator.annotation.AddCheck;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
+import io.github.dunwu.tool.web.log.annotation.AppLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -47,25 +48,26 @@ public class DeptController {
         return DataResult.ok(service.insertBatch(list));
     }
 
-    @ApiOperation("根据 ID 更新一条 Dept 记录")
+    @AppLog(bizType = "部门", operType = "更新操作", value = "'更新 cas_dept 表中 id = ' + #entity.id + ' 的记录'")
+    @ApiOperation("根据 id 更新一条 Dept 记录")
     @PostMapping("edit")
     public DataResult<Boolean> edit(@Validated(EditCheck.class) @RequestBody Dept entity) {
         return DataResult.ok(service.updateById(entity));
     }
 
-    @ApiOperation("根据 ID 批量更新 Dept 记录")
+    @ApiOperation("根据 id 批量更新 Dept 记录")
     @PostMapping("edit/batch")
     public DataResult<Boolean> editBatch(@Validated(EditCheck.class) @RequestBody Collection<Dept> list) {
         return DataResult.ok(service.updateBatchById(list));
     }
 
-    @ApiOperation("根据 ID 删除一条 Dept 记录")
+    @ApiOperation("根据 id 删除一条 Dept 记录")
     @PostMapping("del/{id}")
     public DataResult<Boolean> deleteById(@PathVariable Serializable id) {
         return DataResult.ok(service.deleteById(id));
     }
 
-    @ApiOperation("根据 ID 列表批量删除 Dept 记录")
+    @ApiOperation("根据 id 列表批量删除 Dept 记录")
     @PostMapping("del/batch")
     public DataResult<Boolean> deleteBatchByIds(@RequestBody Collection<? extends Serializable> ids) {
         return DataResult.ok(service.deleteBatchByIds(ids));
@@ -80,7 +82,7 @@ public class DeptController {
     @ApiOperation("根据 DeptQuery 和 Pageable 分页查询 DeptDto 列表")
     @GetMapping("page")
     public PageResult<DeptDto> page(DeptQuery query, Pageable pageable) {
-        return PageResult.ok(service.pojoPageByQuery(query, pageable));
+        return PageResult.ok(service.pojoSpringPageByQuery(query, pageable));
     }
 
     @ApiOperation("根据 id 查询 DeptDto")
@@ -108,17 +110,23 @@ public class DeptController {
     }
 
     @SaCheckPermission("dept:view")
-    @ApiOperation("根据 query 条件，返回 DeptDto 树形列表")
+    @ApiOperation("根据 DeptQuery 返回符合条件的 DeptDto 树形列表")
     @GetMapping("treeList")
     public DataListResult<DeptDto> treeList(DeptQuery query) {
         return DataListResult.ok(service.treeList(query));
     }
 
     @SaCheckPermission("dept:view")
-    @ApiOperation("根据ID获取同级与上级数据")
+    @ApiOperation("根据 ids 获取同级与上级数据")
     @PostMapping("superiorTreeList")
     public DataListResult<DeptDto> superiorTreeList(@RequestBody Collection<Serializable> ids) {
         return DataListResult.ok(service.treeListByIds(ids));
+    }
+
+    @AppLog(bizType = "部门", value = "'根据 id = ' + #entity.id +'更新一条 Dept 记录'")
+    @GetMapping("test")
+    public void test() {
+        System.out.println("test");
     }
 
     // @Log("更新一条 SysDept 记录的关联关系")

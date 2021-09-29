@@ -1,8 +1,10 @@
 package io.github.dunwu.module.cas.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.github.dunwu.tool.data.validator.annotation.EditCheck;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -10,30 +12,36 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import javax.validation.constraints.NotNull;
 
 /**
- * 系统角色部门关联信息
+ * 部门角色关联
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-14
+ * @since 2021-09-28
  */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @TableName("cas_dept_role_map")
-@ApiModel(value = "DeptRoleMap", description = "系统角色部门关联信息")
+@ApiModel(value = "DeptRoleMap", description = "部门角色关联")
 public class DeptRoleMap implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "ID")
+    @NotNull(groups = EditCheck.class)
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "角色ID")
+    @TableField("role_id")
     private Long roleId;
 
-    @ApiModelProperty(value = "部门ID")
+    @TableField("dept_id")
     private Long deptId;
+
+    public static final String ID = "id";
+    public static final String ROLE_ID = "role_id";
+    public static final String DEPT_ID = "dept_id";
 
 }

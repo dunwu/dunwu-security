@@ -202,10 +202,7 @@ export default {
       } else if (form.id !== null) {
         form.isTop = '1'
       }
-      console.info('dept form ', form)
-      console.info('dept dict[\'dept_status\'].options ', this.dict['dept_status'].options)
       form.enabled = `${form.enabled}`
-      console.info('dept form.enabled ', form.enabled)
       if (form.id != null) {
         this.getSuperiorTreeList(form.id)
       } else {
@@ -221,7 +218,6 @@ export default {
       }, 100)
     },
     getSuperiorTreeList(id) {
-      console.log('getSuperiorTreeList id', id)
       deptApi.superiorTreeList(id).then(res => {
         const children = res.map(function(obj) {
           return obj

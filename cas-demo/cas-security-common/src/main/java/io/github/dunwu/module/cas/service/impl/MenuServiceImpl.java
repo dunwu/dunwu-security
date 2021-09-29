@@ -1,10 +1,10 @@
 package io.github.dunwu.module.cas.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import io.github.dunwu.module.security.service.SecurityService;
 import io.github.dunwu.module.cas.dao.MenuDao;
 import io.github.dunwu.module.cas.dao.RoleMenuMapDao;
 import io.github.dunwu.module.cas.entity.Menu;
@@ -15,12 +15,12 @@ import io.github.dunwu.module.cas.entity.query.MenuQuery;
 import io.github.dunwu.module.cas.entity.vo.MenuVo;
 import io.github.dunwu.module.cas.service.MenuService;
 import io.github.dunwu.module.cas.service.RoleService;
-import io.github.dunwu.tool.bean.BeanUtil;
 import io.github.dunwu.tool.data.mybatis.ServiceImpl;
 import io.github.dunwu.tool.util.tree.Node;
 import io.github.dunwu.tool.util.tree.TreeNodeConfig;
 import io.github.dunwu.tool.util.tree.TreeUtil;
 import io.github.dunwu.tool.web.ServletUtil;
+import io.github.dunwu.tool.web.security.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 系统菜单信息 Service 类
+ * 菜单 Service 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-24
+ * @since 2021-09-28
  */
 @Service
 @RequiredArgsConstructor
@@ -47,8 +47,13 @@ public class MenuServiceImpl extends ServiceImpl implements MenuService {
     private final SecurityService securityService;
 
     @Override
-    public boolean save(Menu entity) {
+    public boolean insert(Menu entity) {
         return menuDao.insert(entity);
+    }
+
+    @Override
+    public boolean insertBatch(Collection<Menu> list) {
+        return menuDao.insertBatch(list);
     }
 
     @Override
@@ -57,23 +62,28 @@ public class MenuServiceImpl extends ServiceImpl implements MenuService {
     }
 
     @Override
-    public boolean removeById(Serializable id) {
+    public boolean updateBatchById(Collection<Menu> list) {
+        return menuDao.updateBatchById(list);
+    }
+
+    @Override
+    public boolean save(Menu entity) {
+        return menuDao.save(entity);
+    }
+
+    @Override
+    public boolean saveBatch(Collection<Menu> list) {
+        return menuDao.saveBatch(list);
+    }
+
+    @Override
+    public boolean deleteById(Serializable id) {
         return menuDao.deleteById(id);
     }
 
     @Override
-    public boolean removeByIds(Collection<Serializable> ids) {
+    public boolean deleteBatchByIds(Collection<? extends Serializable> ids) {
         return menuDao.deleteBatchByIds(ids);
-    }
-
-    @Override
-    public Page<MenuDto> pojoPageByQuery(Object query, Pageable pageable) {
-        return menuDao.pojoPageByQuery(query, pageable, this::doToDto);
-    }
-
-    @Override
-    public List<MenuDto> pojoListByQuery(Object query) {
-        return menuDao.pojoListByQuery(query, this::doToDto);
     }
 
     @Override
@@ -82,74 +92,97 @@ public class MenuServiceImpl extends ServiceImpl implements MenuService {
     }
 
     @Override
+    public List<MenuDto> pojoListByQuery(MenuQuery query) {
+        return menuDao.pojoListByQuery(query, this::doToDto);
+    }
+
+    @Override
+    public Page<MenuDto> pojoSpringPageByQuery(MenuQuery query, Pageable pageable) {
+        return menuDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
+    }
+
+    @Override
     public MenuDto pojoById(Serializable id) {
         return menuDao.pojoById(id, this::doToDto);
     }
 
     @Override
-    public MenuDto pojoByQuery(Object query) {
+    public MenuDto pojoByQuery(MenuQuery query) {
         return menuDao.pojoByQuery(query, this::doToDto);
     }
 
     @Override
-    public Integer countByQuery(Object query) {
+    public Integer countByQuery(MenuQuery query) {
         return menuDao.countByQuery(query);
     }
 
     @Override
-    public void exportList(Collection<Serializable> ids, HttpServletResponse response) {
+    public void exportList(Collection<? extends Serializable> ids, HttpServletResponse response) {
         List<MenuDto> list = menuDao.pojoListByIds(ids, this::doToDto);
-        export(list, response);
+        exportDtoList(list, response);
     }
 
     @Override
-    public void exportPage(Object query, Pageable pageable, HttpServletResponse response) {
-        Page<MenuDto> page = menuDao.pojoPageByQuery(query, pageable, this::doToDto);
-        export(page.getContent(), response);
+    public void exportPage(MenuQuery query, Pageable pageable, HttpServletResponse response) {
+        Page<MenuDto> page = menuDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
+        exportDtoList(page.getContent(), response);
     }
 
-    private void export(Collection<MenuDto> list, HttpServletResponse response) {
+    /**
+     * 根据传入的 MenuDto 列表，导出 excel 表单
+     *
+     * @param list     {@link MenuDto} 列表
+     * @param response {@link HttpServletResponse} 实体
+     */
+    private void exportDtoList(Collection<MenuDto> list, HttpServletResponse response) {
         List<Map<String, Object>> mapList = new ArrayList<>();
         for (MenuDto item : list) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("ID", item.getId());
             map.put("上级菜单ID", item.getPid());
-            map.put("菜单名称", item.getName());
-            map.put("菜单图标", item.getIcon());
-            map.put("菜单链接地址", item.getPath());
-            map.put("类型", item.getType());
+            map.put("子菜单数目", item.getSubCount());
+            map.put("菜单类型", item.getType());
+            map.put("菜单标题", item.getTitle());
+            map.put("组件名称", item.getName());
             map.put("组件", item.getComponent());
-            map.put("组件名称", item.getComponentName());
-            map.put("权限", item.getPermission());
             map.put("排序", item.getSequence());
-            map.put("是否为外链", item.getIFrame());
-            map.put("是否缓存", item.getCache());
-            map.put("是否隐藏", item.getHidden());
-            map.put("状态", item.getEnabled());
-            map.put("备注", item.getNote());
+            map.put("图标", item.getIcon());
+            map.put("链接地址", item.getPath());
+            map.put("是否外链", item.getIFrame());
+            map.put("缓存", item.getCache());
+            map.put("隐藏", item.getHidden());
+            map.put("权限", item.getPermission());
             map.put("创建者", item.getCreateBy());
             map.put("更新者", item.getUpdateBy());
+            map.put("创建时间", item.getCreateTime());
+            map.put("更新时间", item.getUpdateTime());
             mapList.add(map);
         }
         ServletUtil.downloadExcel(response, mapList);
     }
 
-    private MenuDto doToDto(Menu model) {
-        if (model == null) {
+    @Override
+    public MenuDto doToDto(Menu entity) {
+        if (entity == null) {
             return null;
         }
 
-        MenuDto dto = BeanUtil.toBean(model, MenuDto.class);
+        MenuDto dto = BeanUtil.toBean(entity, MenuDto.class);
         dto.setLabel(dto.getTitle());
         return dto;
     }
 
-    private Menu dtoToDo(MenuDto entity) {
-        return BeanUtil.toBean(entity, Menu.class);
+    @Override
+    public Menu dtoToDo(MenuDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return BeanUtil.toBean(dto, Menu.class);
     }
 
     @Override
-    public List<MenuDto> treeList(Object query) {
+    public List<MenuDto> treeList(MenuQuery query) {
         List<MenuDto> list = pojoListByQuery(query);
         return buildTreeList(list);
     }
@@ -246,42 +279,42 @@ public class MenuServiceImpl extends ServiceImpl implements MenuService {
 
     private List<MenuVo> buildFrontMenus(Collection<MenuDto> list) {
         List<MenuVo> finalVoList = new LinkedList<>();
-        for (MenuDto entity : list) {
-            if (entity == null) {
+        for (MenuDto dto : list) {
+            if (dto == null) {
                 continue;
             }
 
-            Collection<MenuDto> children = entity.getChildren();
+            Collection<MenuDto> children = dto.getChildren();
             MenuVo menuVo = new MenuVo();
             menuVo.setName(
-                ObjectUtil.isNotEmpty(entity.getComponentName()) ? entity.getComponentName() : entity.getName());
+                ObjectUtil.isNotEmpty(dto.getComponentName()) ? dto.getComponentName() : dto.getName());
             // 一级目录需要加斜杠，不然会报警告
-            menuVo.setPath(entity.getPid() == null ? "/" + entity.getPath() : entity.getPath());
-            menuVo.setHidden(entity.getHidden());
+            menuVo.setPath(dto.getPid() == null ? "/" + dto.getPath() : dto.getPath());
+            menuVo.setHidden(dto.getHidden());
             // 如果不是外链
-            if (!entity.getIFrame()) {
-                if (entity.getPid() == null) {
-                    menuVo.setComponent(StrUtil.isEmpty(entity.getComponent()) ? "Layout" : entity.getComponent());
-                } else if (!StrUtil.isEmpty(entity.getComponent())) {
-                    menuVo.setComponent(entity.getComponent());
+            if (!dto.getIFrame()) {
+                if (dto.getPid() == null) {
+                    menuVo.setComponent(StrUtil.isEmpty(dto.getComponent()) ? "Layout" : dto.getComponent());
+                } else if (!StrUtil.isEmpty(dto.getComponent())) {
+                    menuVo.setComponent(dto.getComponent());
                 }
             }
-            menuVo.setMeta(new MenuVo.MenuMetaVo(entity.getTitle(), entity.getIcon(), !entity.getCache()));
+            menuVo.setMeta(new MenuVo.MenuMetaVo(dto.getTitle(), dto.getIcon(), !dto.getCache()));
             if (CollectionUtil.isNotEmpty(children)) {
                 menuVo.setAlwaysShow(true);
                 menuVo.setRedirect("noredirect");
                 menuVo.setChildren(buildFrontMenus(children));
                 // 处理是一级菜单并且没有子菜单的情况
-            } else if (entity.getPid() == null) {
+            } else if (dto.getPid() == null) {
                 MenuVo menuVo1 = new MenuVo();
                 menuVo1.setMeta(menuVo.getMeta());
                 // 非外链
-                if (!entity.getIFrame()) {
+                if (!dto.getIFrame()) {
                     menuVo1.setPath("index");
                     menuVo1.setName(menuVo.getName());
                     menuVo1.setComponent(menuVo.getComponent());
                 } else {
-                    menuVo1.setPath(entity.getPath());
+                    menuVo1.setPath(dto.getPath());
                 }
                 menuVo.setName(null);
                 menuVo.setMeta(null);

@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import io.github.dunwu.module.security.service.SecurityService;
 import io.github.dunwu.module.cas.dao.*;
 import io.github.dunwu.module.cas.entity.*;
 import io.github.dunwu.module.cas.entity.dto.DeptDto;
@@ -17,6 +16,7 @@ import io.github.dunwu.tool.bean.BeanUtil;
 import io.github.dunwu.tool.core.exception.AuthException;
 import io.github.dunwu.tool.data.mybatis.ServiceImpl;
 import io.github.dunwu.tool.web.ServletUtil;
+import io.github.dunwu.tool.web.security.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -87,8 +87,8 @@ public class RoleServiceImpl extends ServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleDto> pojoPageByQuery(Object query, Pageable pageable) {
-        return roleDao.pojoPageByQuery(query, pageable, this::doToDto);
+    public Page<RoleDto> pojoSpringPageByQuery(Object query, Pageable pageable) {
+        return roleDao.pojoSpringPageByQuery(query, pageable, this::doToDto);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class RoleServiceImpl extends ServiceImpl implements RoleService {
 
     @Override
     public void exportPageData(Object query, Pageable pageable, HttpServletResponse response) {
-        Page<RoleDto> page = roleDao.pojoPageByQuery(query, pageable, RoleDto.class);
+        Page<RoleDto> page = roleDao.pojoSpringPageByQuery(query, pageable, RoleDto.class);
         export(page.getContent(), response);
     }
 

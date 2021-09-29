@@ -1,10 +1,13 @@
 package io.github.dunwu.module.cas.controller;
 
-import io.github.dunwu.module.common.annotation.AppLog;
 import io.github.dunwu.module.cas.entity.Menu;
+import io.github.dunwu.module.cas.entity.dto.MenuDto;
 import io.github.dunwu.module.cas.entity.query.MenuQuery;
+import io.github.dunwu.module.cas.entity.vo.MenuVo;
 import io.github.dunwu.module.cas.service.MenuService;
+import io.github.dunwu.tool.data.DataListResult;
 import io.github.dunwu.tool.data.DataResult;
+import io.github.dunwu.tool.data.PageResult;
 import io.github.dunwu.tool.data.validator.annotation.AddCheck;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
 import io.swagger.annotations.Api;
@@ -14,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,126 +24,116 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 系统菜单信息 Controller 类
+ * 菜单 Controller 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-24
+ * @since 2021-09-28
  */
 @RestController
-@RequestMapping("cas/menu")
-@Api(tags = "系统：菜单管理")
+@RequestMapping("/cas/menu")
+@Api(tags = "菜单 Controller 类")
 @RequiredArgsConstructor
 public class MenuController {
 
     private final MenuService service;
 
-    @AppLog("添加一条 SysMenu 记录")
-    // @PreAuthorize("@exp.check('menu:add')")
-    @ApiOperation("添加一条 SysMenu 记录")
+    @ApiOperation("添加一条 Menu 记录")
     @PostMapping("add")
-    public DataResult add(@Validated(AddCheck.class) @RequestBody Menu entity) {
-        service.save(entity);
-        return DataResult.ok();
+    public DataResult<Boolean> add(@Validated(AddCheck.class) @RequestBody Menu entity) {
+        return DataResult.ok(service.insert(entity));
     }
 
-    @AppLog("更新一条 SysMenu 记录")
-    // @PreAuthorize("@exp.check('menu:edit')")
-    @ApiOperation("更新一条 SysMenu 记录")
+    @ApiOperation("批量添加 Menu 记录")
+    @PostMapping("add/batch")
+    public DataResult<Boolean> addBatch(@Validated(AddCheck.class) @RequestBody Collection<Menu> list) {
+        return DataResult.ok(service.insertBatch(list));
+    }
+
+    @ApiOperation("根据 id 更新一条 Menu 记录")
     @PostMapping("edit")
-    public DataResult edit(@Validated(EditCheck.class) @RequestBody Menu entity) {
-        service.updateById(entity);
-        return DataResult.ok();
+    public DataResult<Boolean> edit(@Validated(EditCheck.class) @RequestBody Menu entity) {
+        return DataResult.ok(service.updateById(entity));
     }
 
-    @AppLog("删除一条 SysMenu 记录")
-    // @PreAuthorize("@exp.check('menu:del')")
-    @ApiOperation("删除一条 SysMenu 记录")
+    @ApiOperation("根据 id 批量更新 Menu 记录")
+    @PostMapping("edit/batch")
+    public DataResult<Boolean> editBatch(@Validated(EditCheck.class) @RequestBody Collection<Menu> list) {
+        return DataResult.ok(service.updateBatchById(list));
+    }
+
+    @ApiOperation("根据 id 删除一条 Menu 记录")
     @PostMapping("del/{id}")
-    public DataResult deleteById(@PathVariable Serializable id) {
-        service.removeById(id);
-        return DataResult.ok();
+    public DataResult<Boolean> deleteById(@PathVariable Serializable id) {
+        return DataResult.ok(service.deleteById(id));
     }
 
-    @AppLog("根据 ID 集合批量删除 SysMenu 记录")
-    // @PreAuthorize("@exp.check('menu:del')")
-    @ApiOperation("根据 ID 集合批量删除 SysMenu 记录")
+    @ApiOperation("根据 id 列表批量删除 Menu 记录")
     @PostMapping("del/batch")
-    public DataResult deleteByIds(@RequestBody Collection<Serializable> ids) {
-        service.removeByIds(ids);
-        return DataResult.ok();
+    public DataResult<Boolean> deleteBatchByIds(@RequestBody Collection<? extends Serializable> ids) {
+        return DataResult.ok(service.deleteBatchByIds(ids));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 query 条件，查询匹配条件的 SysMenuDto 列表")
+    @ApiOperation("根据 MenuQuery 查询 MenuDto 列表")
     @GetMapping("list")
-    public DataResult list(MenuQuery query) {
-        return DataResult.ok(service.pojoListByQuery(query));
+    public DataListResult<MenuDto> list(MenuQuery query) {
+        return DataListResult.ok(service.pojoListByQuery(query));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 query 和 pageable 条件，分页查询 SysMenuDto 记录")
+    @ApiOperation("根据 MenuQuery 和 Pageable 分页查询 MenuDto 列表")
     @GetMapping("page")
-    public DataResult page(MenuQuery query, Pageable pageable) {
-        return DataResult.ok(service.pojoPageByQuery(query, pageable));
+    public PageResult<MenuDto> page(MenuQuery query, Pageable pageable) {
+        return PageResult.ok(service.pojoSpringPageByQuery(query, pageable));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 query 条件，查询匹配条件的总记录数")
-    @GetMapping("count")
-    public DataResult count(MenuQuery query) {
-        return DataResult.ok(service.countByQuery(query));
-    }
-
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 ID 查询 SysMenu 记录")
+    @ApiOperation("根据 id 查询 MenuDto")
     @GetMapping("{id}")
-    public DataResult getById(@PathVariable Serializable id) {
+    public DataResult<MenuDto> getById(@PathVariable Serializable id) {
         return DataResult.ok(service.pojoById(id));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 query 和 pageable 条件批量导出 SysMenuDto 列表数据")
-    @GetMapping("export/page")
-    public void exportPage(MenuQuery query, Pageable pageable, HttpServletResponse response) throws IOException {
-        service.exportPage(query, pageable, response);
+    @ApiOperation("根据 MenuQuery 查询匹配条件的记录数")
+    @GetMapping("count")
+    public DataResult<Integer> count(MenuQuery query) {
+        return DataResult.ok(service.countByQuery(query));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 ID 集合批量导出 SysMenuDto 列表数据")
+    @ApiOperation("根据 id 列表查询 MenuDto 列表，并导出 excel 表单")
     @PostMapping("export/list")
-    public void exportList(@RequestBody Collection<Serializable> ids, HttpServletResponse response)
-        throws IOException {
+    public void exportList(@RequestBody Collection<? extends Serializable> ids, HttpServletResponse response) {
         service.exportList(ids, response);
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
-    @ApiOperation("根据 query 条件，返回 SysMenuDto 树形列表")
-    @GetMapping("treeList")
-    public DataResult treeList(MenuQuery query) {
-        return DataResult.ok(service.treeList(query));
+    @ApiOperation("根据 MenuQuery 和 Pageable 分页查询 MenuDto 列表，并导出 excel 表单")
+    @GetMapping("export/page")
+    public void exportPage(MenuQuery query, Pageable pageable, HttpServletResponse response) {
+        service.exportPage(query, pageable, response);
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
+    @ApiOperation("根据 MenuQuery 条件，返回 MenuDto 树形列表")
+    @GetMapping("treeList")
+    public DataListResult<MenuDto> treeList(MenuQuery query) {
+        return DataListResult.ok(service.treeList(query));
+    }
+
     @ApiOperation("根据ID获取同级与上级数据")
     @PostMapping("superiorTreeList")
-    public DataResult superiorTreeList(@RequestBody Collection<Serializable> ids) {
-        return DataResult.ok(service.treeListByIds(ids));
+    public DataListResult<MenuDto> superiorTreeList(@RequestBody Collection<Serializable> ids) {
+        return DataListResult.ok(service.treeListByIds(ids));
     }
 
-    // @PreAuthorize("@exp.check('menu:view')")
     @ApiOperation("根据ID获取所有孩子节点ID")
     @GetMapping("childrenIds")
-    public DataResult childrenIds(Long id) {
+    public DataListResult<Long> childrenIds(Long id) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
         ids.addAll(service.childrenIds(id));
-        return DataResult.ok(ids);
+        return DataListResult.ok(ids);
     }
 
     @ApiOperation("获取当前用户展示于前端的菜单列表")
     @GetMapping(value = "mine")
-    public DataResult mineList() {
-        return DataResult.ok(service.buildMenuListForCurrentUser());
+    public DataListResult<MenuVo> mineList() {
+        return DataListResult.ok(service.buildMenuListForCurrentUser());
     }
 
 }

@@ -1,6 +1,7 @@
 package io.github.dunwu.module.security.controller;
 
-import io.github.dunwu.module.common.annotation.AppLog;
+import io.github.dunwu.module.cas.entity.User;
+import io.github.dunwu.module.cas.entity.vo.UserPassVo;
 import io.github.dunwu.module.security.annotation.rest.AnonymousGetMapping;
 import io.github.dunwu.module.security.annotation.rest.AnonymousPostMapping;
 import io.github.dunwu.module.security.constant.enums.CodeBiEnum;
@@ -11,8 +12,7 @@ import io.github.dunwu.module.security.entity.vo.LoginSuccessVo;
 import io.github.dunwu.module.security.entity.vo.UserVo;
 import io.github.dunwu.module.security.service.AuthService;
 import io.github.dunwu.module.security.util.JwtTokenUtil;
-import io.github.dunwu.module.cas.entity.User;
-import io.github.dunwu.module.cas.entity.vo.UserPassVo;
+import io.github.dunwu.tool.web.log.annotation.AppLog;
 import io.github.dunwu.tool.data.DataResult;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
 import io.swagger.annotations.Api;

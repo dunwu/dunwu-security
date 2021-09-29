@@ -1,6 +1,7 @@
 package io.github.dunwu.module.cas.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.dunwu.tool.data.validator.annotation.EditCheck;
@@ -14,16 +15,16 @@ import java.io.Serializable;
 import javax.validation.constraints.NotNull;
 
 /**
- * 系统岗位/角色关系表
+ * 岗位角色关联
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-30
+ * @since 2021-09-28
  */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @TableName("cas_job_role_map")
-@ApiModel(value = "JobRoleMap", description = "系统岗位/角色关系表")
+@ApiModel(value = "JobRoleMap", description = "岗位角色关联")
 public class JobRoleMap implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -34,9 +35,11 @@ public class JobRoleMap implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "岗位ID")
+    @TableField("job_id")
     private Long jobId;
 
     @ApiModelProperty(value = "角色ID")
+    @TableField("role_id")
     private Long roleId;
 
     public JobRoleMap() {}
@@ -45,5 +48,9 @@ public class JobRoleMap implements Serializable {
         this.jobId = jobId;
         this.roleId = roleId;
     }
+
+    public static final String ID = "id";
+    public static final String JOB_ID = "job_id";
+    public static final String ROLE_ID = "role_id";
 
 }

@@ -23,6 +23,7 @@ import java.util.Date;
 
 /**
  * 在线用户
+ *
  * @author Zheng Jie
  */
 @Data
@@ -69,6 +70,5 @@ public class OnlineUserDto {
      * 登录时间
      */
     private Date loginTime;
-
 
 }

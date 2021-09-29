@@ -9,15 +9,15 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * 系统岗位/角色关系表 Dto 类
+ * 岗位角色关联 Dto 类
  *
  * @author <a href="mailto:forbreak@163.com">Zhang Peng</a>
- * @since 2020-05-30
+ * @since 2021-09-28
  */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "JobRoleMapDto", description = "系统岗位/角色关系表")
+@ApiModel(value = "JobRoleMapDto", description = "岗位角色关联")
 public class JobRoleMapDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
