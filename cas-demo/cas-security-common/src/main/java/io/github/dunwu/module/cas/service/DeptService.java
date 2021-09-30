@@ -97,7 +97,7 @@ public interface DeptService extends IService {
     /**
      * 根据 {@link DeptQuery} 查询 {@link DeptDto} 列表
      *
-     * @param query 查询条件，根据 DeptQuery 中的 {@link QueryField} 注解自动组装查询条件
+     * @param query 查询条件，根据 {@link DeptQuery} 中的 {@link QueryField} 注解自动组装查询条件
      * @return {@link List<DeptDto>}
      */
     List<DeptDto> pojoListByQuery(DeptQuery query);
@@ -105,7 +105,7 @@ public interface DeptService extends IService {
     /**
      * 根据 {@link DeptQuery} 和 {@link Pageable} 分页查询 {@link DeptDto} 列表
      *
-     * @param query    查询条件，根据 DeptQuery 中的 {@link QueryField} 注解自动组装查询条件
+     * @param query    查询条件，根据 {@link DeptQuery} 中的 {@link QueryField} 注解自动组装查询条件
      * @param pageable 分页查询条件
      * @return {@link Page<DeptDto>}
      */
@@ -122,7 +122,7 @@ public interface DeptService extends IService {
     /**
      * 根据 {@link DeptQuery} 查询 {@link DeptDto} 列表
      *
-     * @param query 查询条件，根据 DeptQuery 中的 {@link QueryField} 注解自动组装查询条件
+     * @param query 查询条件，根据 {@link DeptQuery} 中的 {@link QueryField} 注解自动组装查询条件
      * @return {@link DeptDto}
      */
     DeptDto pojoByQuery(DeptQuery query);
@@ -130,7 +130,7 @@ public interface DeptService extends IService {
     /**
      * 根据 {@link DeptQuery} 查询匹配条件的记录数
      *
-     * @param query 查询条件，根据 DeptQuery 中的 {@link QueryField} 注解自动组装查询条件
+     * @param query 查询条件，根据 {@link DeptQuery} 中的 {@link QueryField} 注解自动组装查询条件
      * @return {@link Integer}
      */
     Integer countByQuery(DeptQuery query);
@@ -146,7 +146,7 @@ public interface DeptService extends IService {
     /**
      * 根据 {@link DeptQuery} 和 {@link Pageable} 分页查询 {@link DeptDto} 列表，并导出 excel 表单
      *
-     * @param query    查询条件，根据 DeptQuery 中的 {@link QueryField} 注解自动组装查询条件
+     * @param query    查询条件，根据 {@link DeptQuery} 中的 {@link QueryField} 注解自动组装查询条件
      * @param pageable 分页查询条件
      * @param response {@link HttpServletResponse} 实体
      */
@@ -155,10 +155,10 @@ public interface DeptService extends IService {
     /**
      * 将 {@link Dept} 转为 {@link DeptDto}
      *
-     * @param model 数据实体
+     * @param entity 数据实体
      * @return /
      */
-    DeptDto doToDto(Dept model);
+    DeptDto doToDto(Dept entity);
 
     /**
      * 将 {@link DeptDto} 转为 {@link Dept}

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import qs from 'qs'
-import { Notification } from 'element-ui'
+import { Message, Notification } from 'element-ui'
 import router from '@/router'
 import store from '@/store'
 import Config from '@/settings'
@@ -12,17 +12,18 @@ import Constant from '@/utils/constant'
 const service = axios.create({
   baseURL: process.env.NODE_ENV === 'production' ? process.env.VUE_APP_BASE_API : '/api', // api 的 base_url
   timeout: Config.timeout, // 请求超时时间
+  withCredentials: true,
   // 请求参数序列化
   paramsSerializer(params) {
-    return qs.stringify(params, { indices: false })
+    return qs.stringify(params, { arrayFormat: 'repeat' })
   }
 })
 
 // request拦截器
 service.interceptors.request.use(
   config => {
-    console.group('%c%s', 'color:blue', '[Http Request]')
-    console.info('[request info]', config)
+    // console.group('%c%s', 'color:blue', '[Http Request]')
+    // console.info('[request info]', config)
     if (getToken()) {
       config.headers['Authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
     }
@@ -39,23 +40,22 @@ service.interceptors.request.use(
 // response 拦截器
 service.interceptors.response.use(
   response => {
-    console.info('[response info]', response)
-    console.groupEnd()
+    // console.info('[response info]', response)
+    // console.groupEnd()
     if (response.status < 200 || response.status > 300) {
-      Notification.error({ title: response.msg, duration: 5000 })
-      return Promise.reject('error')
+      Notification.error({ title: response.data.msg, duration: 5000 })
+      return Promise.reject(response.data.msg)
     } else {
       if (!response.data) {
         Notification.error({ title: '应答消息数据部分为空', duration: 5000 })
-        return Promise.reject('error')
+        return Promise.reject(response.data.msg)
       }
 
       if (response.headers['content-type'].indexOf('application/json') !== -1) {
         // 包装过的消息体，形式为：{"code":0,"data":{},"message":"成功","ok":true}
         if (response.data.code !== Constant.SUCCESS) {
-          console.error('response.data.msg', response.data.msg)
-          Notification.error({ title: response.data.msg, duration: 5000 })
-          return Promise.reject('error')
+          Message.error({ message: response.data.msg, duration: 5000 })
+          return Promise.reject(response.data.msg)
         }
 
         if (response.data.data) {
@@ -70,7 +70,6 @@ service.interceptors.response.use(
   },
   error => {
     // 兼容blob下载出错json提示
-    console.error('error', error)
     if (error.response.data instanceof Blob && error.response.data.type.toLowerCase().indexOf('json') !== -1) {
       const reader = new FileReader()
       reader.readAsText(error.response.data, 'utf-8')

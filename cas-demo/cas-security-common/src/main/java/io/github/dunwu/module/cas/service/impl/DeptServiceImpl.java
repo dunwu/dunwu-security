@@ -169,12 +169,12 @@ public class DeptServiceImpl extends ServiceImpl implements DeptService {
     }
 
     @Override
-    public DeptDto doToDto(Dept model) {
-        if (model == null) {
+    public DeptDto doToDto(Dept entity) {
+        if (entity == null) {
             return null;
         }
 
-        return BeanUtil.toBean(model, DeptDto.class);
+        return BeanUtil.toBean(entity, DeptDto.class);
     }
 
     @Override
@@ -308,9 +308,9 @@ public class DeptServiceImpl extends ServiceImpl implements DeptService {
             return new HashSet<>();
         }
         return children.stream()
-            .filter(Objects::nonNull)
-            .map(DeptDto::getId)
-            .collect(Collectors.toSet());
+                       .filter(Objects::nonNull)
+                       .map(DeptDto::getId)
+                       .collect(Collectors.toSet());
     }
 
     private Set<DeptDto> getDeleteDepts(List<Dept> deptList, Set<DeptDto> deptDtos) {

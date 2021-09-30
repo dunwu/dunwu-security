@@ -1,27 +1,28 @@
 <template>
   <div class="app-container">
+    <!--工具栏-->
     <div class="head-container">
-      <Search />
-      <TableOperation>
-        <el-button
-          slot="left"
+      <div v-if="crud.props.searchToggle">
+        <el-input
+          v-model="query.blurry"
+          clearable
+          size="small"
+          placeholder="请输入你要搜索的内容"
+          style="width: 200px"
           class="filter-item"
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
-          :loading="crud.delAllLoading"
-          @click="confirmDelAll()"
-        >
-          清空
-        </el-button>
-      </TableOperation>
+        />
+        <date-range-picker v-model="query.createTime" class="date-item" />
+        <TableQueryOperation :crud="crud" />
+      </div>
+      <TableOperation :permission="permission" />
     </div>
+
     <!--表格渲染-->
     <el-table
       ref="table"
       v-loading="crud.loading"
       :data="crud.data"
-      style="width: 100%;"
+      @sort-change="crud.changeTableSort"
       @selection-change="crud.selectionChangeHandler"
     >
       <el-table-column type="expand">
@@ -81,6 +82,7 @@
           </el-form>
         </template>
       </el-table-column>
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="level" label="日志级别">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.level === 'ERROR'" type="danger">{{ scope.row.level }}</el-tag>
@@ -109,51 +111,61 @@
 </template>
 
 <script>
-import Search from './search'
-import { delAllInfo } from './api'
-import CRUD, { presenter } from '@crud/crud'
+import CRUD, { crud, header, presenter } from '@crud/crud'
 import TableOperation from '@crud/TableOperation'
+import TableQueryOperation from '@crud/TableQueryOperation'
+import DateRangePicker from '@/components/DateRangePicker'
 import Pagination from '@crud/Pagination'
-import logApi from '@/api/system/log'
+import LogApi from '@/api/system/log'
 
 export default {
-  name: 'Log',
-  components: { Search, TableOperation, Pagination },
+  name: 'LogList',
+  components: { Pagination, TableOperation, TableQueryOperation, DateRangePicker },
+  mixins: [presenter(), header(), crud()],
   cruds() {
-    return CRUD({ title: '日志', url: 'sys/log', crudMethod: { ...logApi }})
+    return CRUD({
+      title: '系统日志记录',
+      url: 'sys/log',
+      sort: ['create_time,desc'],
+      crudMethod: { ...LogApi }
+    })
   },
-  mixins: [presenter()],
-  created() {
-    this.crud.optShow = {
-      add: false,
-      edit: false,
-      del: false,
-      exportPage: true
+  data() {
+    return {
+      permission: {
+        add: ['admin', 'sys:log:add'],
+        edit: ['admin', 'sys:log:edit'],
+        del: ['admin', 'sys:log:del']
+      }
     }
+  },
+  created() {
+    this.crud.optShow.add = false
+    this.crud.optShow.edit = false
   },
   methods: {
-    confirmDelAll() {
-      this.$confirm(`确认清空所有操作日志吗?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this.crud.delAllLoading = true
-          delAllInfo()
-            .then(res => {
-              this.crud.delAllLoading = false
-              this.crud.dleChangePage(1)
-              this.crud.delSuccessNotify()
-              this.crud.toQuery()
-            })
-            .catch(err => {
-              this.crud.delAllLoading = false
-              console.log(err.response.data.msg)
-            })
-        })
-        .catch(() => {})
-    }
+    // confirmDelAll() {
+    //   this.$confirm(`确认清空所有操作日志吗?`, '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   })
+    //     .then(() => {
+    //       this.crud.delAllLoading = true
+    //       delAllInfo()
+    //         .then(res => {
+    //           this.crud.delAllLoading = false
+    //           this.crud.dleChangePage(1)
+    //           this.crud.delSuccessNotify()
+    //           this.crud.toQuery()
+    //         })
+    //         .catch(err => {
+    //           this.crud.delAllLoading = false
+    //           console.log(err.response.data.msg)
+    //         })
+    //     })
+    //     .catch(() => {})
+    // }
   }
 }
 </script>

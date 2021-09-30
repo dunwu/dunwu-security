@@ -38,49 +38,49 @@ public class Dept implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "上级部门ID")
-    @TableField("pid")
+    @TableField("`pid`")
     private Long pid;
 
     @ApiModelProperty(value = "子部门数目")
-    @TableField("sub_count")
+    @TableField("`sub_count`")
     private Integer subCount;
 
     @ApiModelProperty(value = "名称")
     @NotNull
-    @TableField("name")
+    @TableField("`name`")
     private String name;
 
     @ApiModelProperty(value = "排序")
     @Range(min = 0, max = 999)
-    @TableField("sequence")
+    @TableField("`sequence`")
     private Integer sequence;
 
     @ApiModelProperty(value = "状态")
-    @TableField("enabled")
+    @TableField("`enabled`")
     private Boolean enabled;
 
     @ApiModelProperty(value = "备注")
-    @TableField("note")
+    @TableField("`note`")
     private String note;
 
     @JsonIgnore
     @ApiModelProperty(value = "创建者")
-    @TableField("create_by")
+    @TableField("`create_by`")
     private String createBy;
 
     @JsonIgnore
     @ApiModelProperty(value = "更新者")
-    @TableField("update_by")
+    @TableField("`update_by`")
     private String updateBy;
 
     @JsonIgnore
     @ApiModelProperty(value = "创建时间")
-    @TableField("create_time")
+    @TableField("`create_time`")
     private LocalDateTime createTime;
 
     @JsonIgnore
     @ApiModelProperty(value = "更新时间")
-    @TableField("update_time")
+    @TableField("`update_time`")
     private LocalDateTime updateTime;
 
     public static final String ID = "id";

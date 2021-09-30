@@ -37,37 +37,42 @@ public class DeptController {
     private final DeptService service;
 
     @ApiOperation("添加一条 Dept 记录")
+    @AppLog(bizType = "部门", operType = "添加", value = "'向 cas_dept 表中添加一条记录，内容为：' + #entity")
     @PostMapping("add")
     public DataResult<Boolean> add(@Validated(AddCheck.class) @RequestBody Dept entity) {
         return DataResult.ok(service.insert(entity));
     }
 
     @ApiOperation("批量添加 Dept 记录")
+    @AppLog(bizType = "部门", operType = "批量添加", value = "'向 cas_dept 表中批量添加 ' + #list.size + ' 条记录'")
     @PostMapping("add/batch")
     public DataResult<Boolean> addBatch(@Validated(AddCheck.class) @RequestBody Collection<Dept> list) {
         return DataResult.ok(service.insertBatch(list));
     }
 
-    @AppLog(bizType = "部门", operType = "更新操作", value = "'更新 cas_dept 表中 id = ' + #entity.id + ' 的记录'")
     @ApiOperation("根据 id 更新一条 Dept 记录")
+    @AppLog(bizType = "部门", operType = "更新", value = "'更新 cas_dept 表中 id = ' + #entity.id + ' 的记录，内容为：' + #entity")
     @PostMapping("edit")
     public DataResult<Boolean> edit(@Validated(EditCheck.class) @RequestBody Dept entity) {
         return DataResult.ok(service.updateById(entity));
     }
 
     @ApiOperation("根据 id 批量更新 Dept 记录")
+    @AppLog(bizType = "部门", operType = "批量更新", value = "'批量更新 cas_dept 表中 ' + #list.size + ' 条记录'")
     @PostMapping("edit/batch")
     public DataResult<Boolean> editBatch(@Validated(EditCheck.class) @RequestBody Collection<Dept> list) {
         return DataResult.ok(service.updateBatchById(list));
     }
 
     @ApiOperation("根据 id 删除一条 Dept 记录")
+    @AppLog(bizType = "部门", operType = "删除", value = "'删除 cas_dept 表中 id = ' + #entity.id + ' 的记录'")
     @PostMapping("del/{id}")
     public DataResult<Boolean> deleteById(@PathVariable Serializable id) {
         return DataResult.ok(service.deleteById(id));
     }
 
     @ApiOperation("根据 id 列表批量删除 Dept 记录")
+    @AppLog(bizType = "部门", operType = "批量删除", value = "'批量删除 cas_dept 表中 ' + #list.size + ' 条记录'")
     @PostMapping("del/batch")
     public DataResult<Boolean> deleteBatchByIds(@RequestBody Collection<? extends Serializable> ids) {
         return DataResult.ok(service.deleteBatchByIds(ids));
@@ -98,12 +103,14 @@ public class DeptController {
     }
 
     @ApiOperation("根据 id 列表查询 DeptDto 列表，并导出 excel 表单")
+    @AppLog(bizType = "部门", operType = "导出", value = "'导出 cas_dept 表中 id = ' + #ids + ' 的记录'")
     @PostMapping("export/list")
     public void exportList(@RequestBody Collection<? extends Serializable> ids, HttpServletResponse response) {
         service.exportList(ids, response);
     }
 
     @ApiOperation("根据 DeptQuery 和 Pageable 分页查询 DeptDto 列表，并导出 excel 表单")
+    @AppLog(bizType = "部门", operType = "导出", value = "分页导出 cas_dept 表中的记录")
     @GetMapping("export/page")
     public void exportPage(DeptQuery query, Pageable pageable, HttpServletResponse response) {
         service.exportPage(query, pageable, response);

@@ -1,6 +1,7 @@
 package io.github.dunwu;
 
 import io.github.dunwu.module.sys.service.LogService;
+import io.github.dunwu.tool.web.log.LogStorage;
 import io.github.dunwu.tool.web.log.aspect.AppLogAspect;
 import io.github.dunwu.tool.web.security.SecurityService;
 import io.swagger.annotations.Api;
@@ -36,8 +37,8 @@ public class SaSsoServerApplication {
     }
 
     @Bean
-    public AppLogAspect appLogAspect(LogService logService, SecurityService securityService) {
-        return new AppLogAspect(logService, securityService);
+    public AppLogAspect appLogAspect(LogStorage logStorage, SecurityService securityService) {
+        return new AppLogAspect(logStorage, securityService);
     }
 
 }
